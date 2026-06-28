@@ -64,6 +64,6 @@ fun TamatamiNavHost(container: AppContainer) {
         composable<TamatamiRoute.Nutrition> { NutritionScreen(navController, container) }
         composable<TamatamiRoute.Hormones> { HormonesScreen(navController, container) }
         composable<TamatamiRoute.CycleInfo> { CycleInfoScreen(navController, container) }
-        composable<TamatamiRoute.Settings> { SettingsScreen(navController) }
+        composable<TamatamiRoute.Settings> { SettingsScreen(navController, container) }
     }
 }
