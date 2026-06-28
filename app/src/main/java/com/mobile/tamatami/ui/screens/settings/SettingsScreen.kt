@@ -8,13 +8,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,12 +56,21 @@ fun SettingsScreen(
         factory = SettingsViewModel.Factory(userRepository = container.userRepository),
     )
     val state by viewModel.state.collectAsState()
+    val isDirty by viewModel.isDirty.collectAsState()
     var datePickerOpen by remember { mutableStateOf(false) }
     var savedAck by remember { mutableStateOf(false) }
 
     TamatamiScaffold(
         title = "Settings",
         bottomBar = { TamatamiBottomBar(navController) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                )
+            }
+        },
     ) { padding ->
         if (!state.loaded) {
             Box(
@@ -68,110 +82,121 @@ fun SettingsScreen(
             return@TamatamiScaffold
         }
 
-        Column(
+        // LazyColumn so the screen scrolls on small viewports — matches the
+        // other tabs (Hormones, Training) rather than the original fixed
+        // Column. `imePadding()` shrinks the column when the soft keyboard
+        // opens so the focused OutlinedTextField stays visible above it.
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .imePadding()
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // -- Profile -----------------------------------------------------
-            SettingsSectionCard(title = "Profile") {
-                OutlinedTextField(
-                    value = state.tamaName,
-                    onValueChange = viewModel::setTamaName,
-                    label = { Text("Tama's name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            // -- Cycle -------------------------------------------------------
-            SettingsSectionCard(title = "Cycle") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Last period start",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            state.lastPeriodStart.format(dateFormatter),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                    TextButton(onClick = { datePickerOpen = true }) { Text("Change") }
-                }
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                NumberStepperRow(
-                    label = "Average cycle length",
-                    suffix = "days",
-                    value = state.avgCycleLengthDays,
-                    range = MIN_CYCLE..MAX_CYCLE,
-                    onChange = viewModel::setCycleLength,
-                )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                NumberStepperRow(
-                    label = "Average period length",
-                    suffix = "days",
-                    value = state.avgPeriodLengthDays,
-                    range = MIN_PERIOD..MAX_PERIOD,
-                    onChange = viewModel::setPeriodLength,
-                )
-            }
-
-            // -- Preferences -------------------------------------------------
-            SettingsSectionCard(title = "Preferences") {
-                SwitchRow(
-                    label = "I'm trying to conceive",
-                    checked = state.tryingToConceive,
-                    onChange = viewModel::setTryingToConceive,
-                )
-                SwitchRow(
-                    label = "I'm on hormonal contraception",
-                    checked = state.onContraception,
-                    onChange = viewModel::setOnContraception,
-                )
-                SwitchRow(
-                    label = "My cycles are irregular",
-                    checked = state.irregularCycles,
-                    onChange = viewModel::setIrregularCycles,
-                )
-            }
-
-            // -- About -------------------------------------------------------
-            SettingsSectionCard(title = "About") {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text("Version", modifier = Modifier.weight(1f))
-                    Text(
-                        APP_VERSION,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+            item {
+                SettingsSectionCard(title = "Profile") {
+                    OutlinedTextField(
+                        value = state.tamaName,
+                        onValueChange = viewModel::setTamaName,
+                        label = { Text("Tama's name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
 
-            // -- Save bar ----------------------------------------------------
-            Button(
-                onClick = {
-                    savedAck = true
-                    viewModel.save()
-                },
-                enabled = viewModel.isDirty,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(if (savedAck && !viewModel.isDirty) "Saved ✓" else "Save changes")
+            // -- Cycle -------------------------------------------------------
+            item {
+                SettingsSectionCard(title = "Cycle") {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Last period start",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                state.lastPeriodStart.format(dateFormatter),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                        TextButton(onClick = { datePickerOpen = true }) { Text("Change") }
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    NumberStepperRow(
+                        label = "Average cycle length",
+                        suffix = "days",
+                        value = state.avgCycleLengthDays,
+                        range = MIN_CYCLE..MAX_CYCLE,
+                        onChange = viewModel::setCycleLength,
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    NumberStepperRow(
+                        label = "Average period length",
+                        suffix = "days",
+                        value = state.avgPeriodLengthDays,
+                        range = MIN_PERIOD..MAX_PERIOD,
+                        onChange = viewModel::setPeriodLength,
+                    )
+                }
             }
-            OutlinedButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text("Back") }
 
-            Spacer(Modifier.height(24.dp))
+            // -- Preferences -------------------------------------------------
+            item {
+                SettingsSectionCard(title = "Preferences") {
+                    SwitchRow(
+                        label = "I'm trying to conceive",
+                        checked = state.tryingToConceive,
+                        onChange = viewModel::setTryingToConceive,
+                    )
+                    SwitchRow(
+                        label = "I'm on hormonal contraception",
+                        checked = state.onContraception,
+                        onChange = viewModel::setOnContraception,
+                    )
+                    SwitchRow(
+                        label = "My cycles are irregular",
+                        checked = state.irregularCycles,
+                        onChange = viewModel::setIrregularCycles,
+                    )
+                }
+            }
+
+            // -- About -------------------------------------------------------
+            item {
+                SettingsSectionCard(title = "About") {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text("Version", modifier = Modifier.weight(1f))
+                        Text(
+                            APP_VERSION,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            // -- Save bar ----------------------------------------------------
+            item {
+                Button(
+                    onClick = {
+                        savedAck = true
+                        viewModel.save()
+                    },
+                    enabled = isDirty,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(if (savedAck && !isDirty) "Saved ✓" else "Save changes")
+                }
+            }
+
+            item { Spacer(Modifier.height(24.dp)) }
         }
     }
 

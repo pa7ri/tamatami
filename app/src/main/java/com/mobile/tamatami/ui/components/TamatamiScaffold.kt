@@ -14,6 +14,7 @@ fun TamatamiScaffold(
     title: String,
     modifier: Modifier = Modifier,
     bottomBar: @Composable () -> Unit = {},
+    navigationIcon: @Composable () -> Unit = {},
     actions: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -22,6 +23,7 @@ fun TamatamiScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(title) },
+                navigationIcon = { navigationIcon() },
                 actions = { actions() },
             )
         },

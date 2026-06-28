@@ -8,6 +8,7 @@ import com.mobile.tamatami.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,8 +19,8 @@ import java.time.LocalDate
  * Settings is profile-editing — every field is round-tripped to the
  * [UserProfileEntity] singleton row. We keep an in-memory draft separate from
  * the persisted state so the user can edit freely; "Save" writes the whole
- * row back. The Compose layer collects [state] and pushes individual field
- * updates via the `set*` methods.
+ * row back. The Compose layer collects [state] and [isDirty] and pushes
+ * individual field updates via the `set*` methods.
  */
 class SettingsViewModel(
     private val userRepository: UserRepository,
@@ -39,20 +40,18 @@ class SettingsViewModel(
         initialValue = SettingsUiState.Empty,
     )
 
-    /** True when the user has changed at least one field since the last load. */
-    val isDirty: Boolean
-        get() {
-            val o = original.value ?: return false
-            val d = draft.value
-            if (!d.loaded) return false
-            return o.tamaName != d.tamaName ||
-                o.lastPeriodStart != d.lastPeriodStart ||
-                o.avgCycleLengthDays != d.avgCycleLengthDays ||
-                o.avgPeriodLengthDays != d.avgPeriodLengthDays ||
-                o.tryingToConceive != d.tryingToConceive ||
-                o.onContraception != d.onContraception ||
-                o.irregularCycles != d.irregularCycles
-        }
+    /**
+     * True when the user has changed at least one field since the last load.
+     * Exposed as a [StateFlow] (not a plain `get()` property) so Compose
+     * recomposes the Save button when the dirty status flips.
+     */
+    val isDirty: StateFlow<Boolean> = combine(original, draft) { o, d ->
+        if (o == null || !d.loaded) false else o.differsFrom(d)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = false,
+    )
 
     init {
         viewModelScope.launch {
@@ -95,37 +94,23 @@ class SettingsViewModel(
         val d = draft.value
         if (!d.loaded) return
         val o = original.value
+        val saved = UserProfileEntity(
+            id = 0,
+            tamaName = d.tamaName.ifBlank { "Tama" },
+            lastPeriodStart = d.lastPeriodStart,
+            avgCycleLengthDays = d.avgCycleLengthDays,
+            avgPeriodLengthDays = d.avgPeriodLengthDays,
+            tryingToConceive = d.tryingToConceive,
+            onContraception = d.onContraception,
+            irregularCycles = d.irregularCycles,
+            // Preserve onboarding flag / createdAt from the loaded row.
+            onboardingComplete = o?.onboardingComplete ?: true,
+            createdAt = o?.createdAt ?: Instant.now(),
+        )
         viewModelScope.launch {
-            userRepository.saveProfile(
-                UserProfileEntity(
-                    id = 0,
-                    tamaName = d.tamaName.ifBlank { "Tama" },
-                    lastPeriodStart = d.lastPeriodStart,
-                    avgCycleLengthDays = d.avgCycleLengthDays,
-                    avgPeriodLengthDays = d.avgPeriodLengthDays,
-                    tryingToConceive = d.tryingToConceive,
-                    onContraception = d.onContraception,
-                    irregularCycles = d.irregularCycles,
-                    // Preserve onboarding flag / createdAt from the loaded row.
-                    onboardingComplete = o?.onboardingComplete ?: true,
-                    createdAt = o?.createdAt ?: Instant.now(),
-                )
-            )
-            // Refresh original so isDirty flips back to false.
-            original.update {
-                UserProfileEntity(
-                    id = 0,
-                    tamaName = d.tamaName.ifBlank { "Tama" },
-                    lastPeriodStart = d.lastPeriodStart,
-                    avgCycleLengthDays = d.avgCycleLengthDays,
-                    avgPeriodLengthDays = d.avgPeriodLengthDays,
-                    tryingToConceive = d.tryingToConceive,
-                    onContraception = d.onContraception,
-                    irregularCycles = d.irregularCycles,
-                    onboardingComplete = o?.onboardingComplete ?: true,
-                    createdAt = o?.createdAt ?: Instant.now(),
-                )
-            }
+            userRepository.saveProfile(saved)
+            // Update original so isDirty flips back to false.
+            original.update { saved }
             onSaved()
         }
     }
@@ -138,3 +123,13 @@ class SettingsViewModel(
             SettingsViewModel(userRepository) as T
     }
 }
+
+/** Field-by-field comparison between the persisted row and the in-memory draft. */
+private fun UserProfileEntity.differsFrom(d: SettingsUiState): Boolean =
+    tamaName != d.tamaName ||
+        lastPeriodStart != d.lastPeriodStart ||
+        avgCycleLengthDays != d.avgCycleLengthDays ||
+        avgPeriodLengthDays != d.avgPeriodLengthDays ||
+        tryingToConceive != d.tryingToConceive ||
+        onContraception != d.onContraception ||
+        irregularCycles != d.irregularCycles
