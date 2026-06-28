@@ -3,7 +3,9 @@ package com.mobile.tamatami.data.db
 import androidx.room.TypeConverter
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.model.TamagotchiMood
+import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import java.time.Instant
@@ -37,4 +39,11 @@ class Converters {
     @TypeConverter fun workoutIntensityToString(value: WorkoutIntensity?): String? = value?.name
     @TypeConverter fun stringToWorkoutIntensity(value: String?): WorkoutIntensity? =
         value?.let(WorkoutIntensity::valueOf)
+
+    @TypeConverter fun symptomToString(value: Symptom?): String? = value?.name
+    @TypeConverter fun stringToSymptom(value: String?): Symptom? = value?.let(Symptom::valueOf)
+
+    @TypeConverter fun cravingToString(value: CravingHint?): String? = value?.name
+    @TypeConverter fun stringToCraving(value: String?): CravingHint? =
+        value?.let(CravingHint::valueOf)
 }

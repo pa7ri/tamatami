@@ -1,14 +1,21 @@
 package com.mobile.tamatami.data.repository
 
+import com.mobile.tamatami.data.db.dao.CravingLogDao
 import com.mobile.tamatami.data.db.dao.MoodLogDao
 import com.mobile.tamatami.data.db.dao.PeriodDayDao
+import com.mobile.tamatami.data.db.dao.SymptomLogDao
 import com.mobile.tamatami.data.db.dao.WaterLogDao
+import com.mobile.tamatami.data.db.dao.WorkoutLogDao
+import com.mobile.tamatami.data.db.entity.CravingLogEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
+import com.mobile.tamatami.data.db.entity.SymptomLogEntity
 import com.mobile.tamatami.data.db.entity.WaterLogEntity
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.domain.model.Symptom
+import com.mobile.tamatami.domain.nutrition.CravingHint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -18,20 +25,40 @@ class DailyLogRepository(
     private val waterDao: WaterLogDao,
     private val moodDao: MoodLogDao,
     private val periodDayDao: PeriodDayDao,
+    private val symptomDao: SymptomLogDao,
+    private val cravingDao: CravingLogDao,
+    private val workoutDao: WorkoutLogDao,
 ) {
+    /**
+     * Everything the user has logged for [date], live. Six sources combine
+     * into one [DailySnapshot] so the Calendar's day card and Home's "today"
+     * widgets can bind a single flow.
+     *
+     * Built as a 5-arg [combine] (the largest typed overload) zipped with the
+     * sixth flow — keeps the lambda parameters type-checked instead of
+     * unpacking an untyped `Array<*>`.
+     */
     fun observeToday(date: LocalDate): Flow<DailySnapshot> = combine(
         waterDao.observeByDate(date),
         moodDao.observeByDate(date),
         periodDayDao.observeByDate(date),
-    ) { water, mood, flow ->
+        symptomDao.observeByDate(date),
+        cravingDao.observeByDate(date),
+    ) { water, mood, flow, symptoms, craving ->
         DailySnapshot(
             date = date,
             waterGlasses = water?.glasses ?: 0,
             waterGoal = water?.goal ?: 8,
             mood = mood?.mood,
             energy = mood?.energy,
+            moodNotes = mood?.notes,
             periodFlow = flow?.flow,
+            symptoms = symptoms.mapTo(LinkedHashSet()) { it.symptom },
+            craving = craving?.craving,
+            workouts = emptyList(),
         )
+    }.combine(workoutDao.observeByDate(date)) { snapshot, workouts ->
+        snapshot.copy(workouts = workouts)
     }
 
     suspend fun incrementWater(date: LocalDate) {
@@ -67,9 +94,15 @@ class DailyLogRepository(
                 date = date,
                 mood = mood,
                 energy = energy.coerceIn(1, 5),
-                notes = notes,
+                notes = notes ?: current?.notes,
             )
         )
+    }
+
+    /** Update only the energy slider; leaves mood + notes alone (no-op if no mood yet). */
+    suspend fun setEnergy(date: LocalDate, energy: Int) {
+        val current = moodDao.observeByDate(date).first() ?: return
+        moodDao.upsert(current.copy(energy = energy.coerceIn(1, 5)))
     }
 
     suspend fun setFlow(date: LocalDate, flow: PeriodFlow) {
@@ -85,5 +118,31 @@ class DailyLogRepository(
                 )
             )
         }
+    }
+
+    /** Toggle a symptom on/off for [date]. Cheap — same row, composite PK. */
+    suspend fun toggleSymptom(date: LocalDate, symptom: Symptom) {
+        val current = symptomDao.observeByDate(date).first()
+        if (current.any { it.symptom == symptom }) {
+            symptomDao.delete(date, symptom)
+        } else {
+            symptomDao.upsert(SymptomLogEntity(date, symptom))
+        }
+    }
+
+    /** Pass `null` to clear the day's craving. */
+    suspend fun setCraving(date: LocalDate, craving: CravingHint?) {
+        if (craving == null) {
+            cravingDao.deleteByDate(date)
+            return
+        }
+        val current = cravingDao.observeByDate(date).first()
+        cravingDao.upsert(
+            CravingLogEntity(
+                id = current?.id ?: 0,
+                date = date,
+                craving = craving,
+            )
+        )
     }
 }

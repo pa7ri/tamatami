@@ -36,7 +36,11 @@ class TamagotchiMoodEngineTest {
         waterGoal = goal,
         mood = mood,
         energy = null,
+        moodNotes = null,
         periodFlow = flow,
+        symptoms = emptySet(),
+        craving = null,
+        workouts = emptyList(),
     )
 
     @Test fun `luteal with two glasses is sad and thirsty`() {

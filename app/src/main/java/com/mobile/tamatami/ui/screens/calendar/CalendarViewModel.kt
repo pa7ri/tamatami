@@ -10,17 +10,23 @@ import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.domain.calendar.MonthBuilder
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.domain.model.Symptom
+import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.util.Clock
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModel(
     private val userRepository: UserRepository,
     private val cycleRepository: CycleRepository,
@@ -34,6 +40,12 @@ class CalendarViewModel(
     private val displayedMonth = MutableStateFlow(YearMonth.from(clock.today()))
     private val selectedDate = MutableStateFlow<LocalDate?>(null)
 
+    /**
+     * The state stream. The 5-arg [combine] handles the calendar-grid inputs;
+     * a separate [flatMapLatest] on [selectedDate] keeps the daily snapshot
+     * flowing for whichever date the day card is currently showing (selected,
+     * or today when nothing is selected).
+     */
     val state: StateFlow<CalendarUiState> = combine(
         userRepository.observeProfile(),
         periodDayDao.observeRecent(),
@@ -46,7 +58,13 @@ class CalendarViewModel(
             days = MonthBuilder.build(month, profile, periodDays, today),
             selectedDate = selected,
             cycle = cycle,
+            selectedDaySnapshot = null, // filled in by the next combine
         )
+    }.flatMapLatest { partial ->
+        val target = partial.selectedDate ?: today
+        dailyLogRepository.observeToday(target).map { snapshot ->
+            partial.copy(selectedDaySnapshot = snapshot)
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -61,8 +79,24 @@ class CalendarViewModel(
         viewModelScope.launch { cycleRepository.logPeriodDay(date, flow) }
     }
 
-    fun setMood(date: LocalDate, mood: Mood, energy: Int) {
-        viewModelScope.launch { dailyLogRepository.setMood(date, mood, energy) }
+    fun setMood(date: LocalDate, mood: Mood) {
+        viewModelScope.launch { dailyLogRepository.setMood(date, mood) }
+    }
+
+    fun setEnergy(date: LocalDate, energy: Int) {
+        viewModelScope.launch { dailyLogRepository.setEnergy(date, energy) }
+    }
+
+    fun toggleSymptom(date: LocalDate, symptom: Symptom) {
+        viewModelScope.launch { dailyLogRepository.toggleSymptom(date, symptom) }
+    }
+
+    fun setWater(date: LocalDate, glasses: Int) {
+        viewModelScope.launch { dailyLogRepository.setWater(date, glasses) }
+    }
+
+    fun setCraving(date: LocalDate, craving: CravingHint?) {
+        viewModelScope.launch { dailyLogRepository.setCraving(date, craving) }
     }
 
     class Factory(

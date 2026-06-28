@@ -2,6 +2,7 @@ package com.mobile.tamatami.domain.calendar
 
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
 import com.mobile.tamatami.data.db.entity.UserProfileEntity
+import com.mobile.tamatami.domain.cycle.CycleHistory
 import com.mobile.tamatami.domain.cycle.CyclePhaseCalculator
 import com.mobile.tamatami.domain.cycle.PeriodPredictor
 import com.mobile.tamatami.domain.model.CyclePhase
@@ -25,6 +26,11 @@ data class CalendarDay(
  * Pure builder for a 6×7 calendar grid. The returned list always has 42
  * entries — leading and trailing days outside [displayedMonth] keep
  * `inMonth = false` so the grid never reflows.
+ *
+ * The predicted-period and predicted-ovulation rings are driven by
+ * [PeriodPredictor.predictAdaptive] — once the user has logged a couple of
+ * real cycles, the rings track their actual length, not their onboarding
+ * guess.
  */
 object MonthBuilder {
 
@@ -42,20 +48,25 @@ object MonthBuilder {
         val loggedByDate = loggedPeriodDays.associateBy { it.date }
 
         val predicted: LocalDate? = profile?.let {
-            PeriodPredictor.predict(it.lastPeriodStart, it.avgCycleLengthDays, today).nextDate
+            PeriodPredictor.predictAdaptive(it, loggedPeriodDays, today).nextDate
         }
-        val predictedOvulation: LocalDate? = predicted?.minusDays(
-            (profile?.avgCycleLengthDays ?: 28) / 2L
-        )
+        // Ovulation is half-a-cycle before the next predicted period, using
+        // the **adaptive** cycle length rather than the onboarding default.
+        val adaptiveCycleLen: Int = profile?.let {
+            CycleHistory.avgCycleLength(
+                starts = CycleHistory.detectStarts(loggedPeriodDays),
+                fallback = it.avgCycleLengthDays,
+            )
+        } ?: 28
+        val predictedOvulation: LocalDate? = predicted?.minusDays(adaptiveCycleLen / 2L)
 
         return List(42) { index ->
             val date = gridStart.plusDays(index.toLong())
             val inMonth = YearMonth.from(date) == displayedMonth
             val phase = if (profile != null) {
-                CyclePhaseCalculator.calculate(
-                    lastPeriodStart = profile.lastPeriodStart,
-                    avgCycleLength = profile.avgCycleLengthDays,
-                    avgPeriodLength = profile.avgPeriodLengthDays,
+                CyclePhaseCalculator.calculateAdaptive(
+                    profile = profile,
+                    loggedPeriodDays = loggedPeriodDays,
                     today = date,
                 ).phase
             } else {

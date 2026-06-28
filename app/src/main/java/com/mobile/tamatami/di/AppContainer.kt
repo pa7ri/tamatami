@@ -52,6 +52,9 @@ class AppContainer(context: Context) {
             waterDao = db.waterLogDao(),
             moodDao = db.moodLogDao(),
             periodDayDao = db.periodDayDao(),
+            symptomDao = db.symptomLogDao(),
+            cravingDao = db.cravingLogDao(),
+            workoutDao = db.workoutLogDao(),
         )
     }
 

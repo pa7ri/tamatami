@@ -23,14 +23,7 @@ data class HomeUiState(
                 daysUntilNextPeriod = null,
                 cycleLength = 28,
             ),
-            daily = DailySnapshot(
-                date = LocalDate.now(),
-                waterGlasses = 0,
-                waterGoal = 8,
-                mood = null,
-                energy = null,
-                periodFlow = null,
-            ),
+            daily = DailySnapshot.empty(LocalDate.now()),
             tama = TamagotchiState.Idle,
         )
     }

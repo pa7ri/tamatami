@@ -1,5 +1,7 @@
 package com.mobile.tamatami.domain.cycle
 
+import com.mobile.tamatami.data.db.entity.PeriodDayEntity
+import com.mobile.tamatami.data.db.entity.UserProfileEntity
 import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import java.time.LocalDate
@@ -18,6 +20,13 @@ import java.time.temporal.ChronoUnit
  *
  * `today < lastPeriodStart` returns a [CyclePhase.UNKNOWN] snapshot so the UI
  * can render an empty state instead of negative-day math.
+ *
+ * Two entry points:
+ *  - [calculate] — pure inputs, used by tests and any caller that already
+ *    has the cycle parameters resolved.
+ *  - [calculateAdaptive] — passes [loggedPeriodDays] through
+ *    [PeriodPredictor.predictAdaptive] so the resulting `predictedNextPeriod`
+ *    tracks what's actually been logged.
  */
 object CyclePhaseCalculator {
 
@@ -31,6 +40,46 @@ object CyclePhaseCalculator {
         avgCycleLength: Int,
         avgPeriodLength: Int,
         today: LocalDate,
+    ): CycleSnapshot = calculateInternal(
+        lastPeriodStart = lastPeriodStart,
+        avgCycleLength = avgCycleLength,
+        avgPeriodLength = avgPeriodLength,
+        today = today,
+        prediction = null,
+    )
+
+    /**
+     * Same shape as [calculate], but derives the anchor + cycle length from
+     * [loggedPeriodDays] via [PeriodPredictor.predictAdaptive]. The returned
+     * `cycleLength` on the snapshot reflects the *adaptive* length.
+     */
+    fun calculateAdaptive(
+        profile: UserProfileEntity,
+        loggedPeriodDays: List<PeriodDayEntity>,
+        today: LocalDate,
+    ): CycleSnapshot {
+        val adaptive = PeriodPredictor.predictAdaptive(profile, loggedPeriodDays, today)
+        val starts = CycleHistory.detectStarts(loggedPeriodDays)
+        val anchor = starts.maxOrNull() ?: profile.lastPeriodStart
+        val adaptiveCycleLen = CycleHistory.avgCycleLength(
+            starts = starts,
+            fallback = profile.avgCycleLengthDays,
+        )
+        return calculateInternal(
+            lastPeriodStart = anchor,
+            avgCycleLength = adaptiveCycleLen,
+            avgPeriodLength = profile.avgPeriodLengthDays,
+            today = today,
+            prediction = adaptive,
+        )
+    }
+
+    private fun calculateInternal(
+        lastPeriodStart: LocalDate,
+        avgCycleLength: Int,
+        avgPeriodLength: Int,
+        today: LocalDate,
+        prediction: Prediction?,
     ): CycleSnapshot {
         val cycleLen = avgCycleLength.coerceIn(MIN_CYCLE, MAX_CYCLE)
         val periodLen = avgPeriodLength.coerceIn(MIN_PERIOD, MAX_PERIOD)
@@ -69,7 +118,7 @@ object CyclePhaseCalculator {
             CyclePhase.UNKNOWN -> 0
         }
 
-        val nextStart = PeriodPredictor.predict(lastPeriodStart, cycleLen, today)
+        val nextStart = prediction ?: PeriodPredictor.predict(lastPeriodStart, cycleLen, today)
         return CycleSnapshot(
             phase = phase,
             cycleDay = cycleDay,

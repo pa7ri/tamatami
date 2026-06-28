@@ -10,7 +10,7 @@ import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.PeriodFlow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 
 class CycleRepository(
@@ -18,9 +18,14 @@ class CycleRepository(
     private val cycleDao: CycleEntryDao,
     private val periodDayDao: PeriodDayDao,
 ) {
-    /** Live snapshot for [today], recomputed whenever the user profile changes. */
+    /**
+     * Live snapshot for [today], recomputed whenever the profile or any
+     * logged period day changes. Adaptive: uses the user's logged history
+     * (via [CyclePhaseCalculator.calculateAdaptive]) so the predicted-next
+     * date reflects reality once a few cycles are recorded.
+     */
     fun observeTodayCycle(today: LocalDate): Flow<CycleSnapshot> =
-        userDao.observe().map { profile ->
+        combine(userDao.observe(), periodDayDao.observeRecent()) { profile, periodDays ->
             if (profile == null) {
                 CycleSnapshot(
                     phase = CyclePhase.UNKNOWN,
@@ -31,10 +36,9 @@ class CycleRepository(
                     cycleLength = 28,
                 )
             } else {
-                CyclePhaseCalculator.calculate(
-                    lastPeriodStart = profile.lastPeriodStart,
-                    avgCycleLength = profile.avgCycleLengthDays,
-                    avgPeriodLength = profile.avgPeriodLengthDays,
+                CyclePhaseCalculator.calculateAdaptive(
+                    profile = profile,
+                    loggedPeriodDays = periodDays,
                     today = today,
                 )
             }
