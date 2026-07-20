@@ -35,7 +35,7 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun LogWorkoutSheet(
-    today: LocalDate,
+    date: LocalDate,
     onDismiss: () -> Unit,
     onSave: (LocalDate, WorkoutType, Int, WorkoutIntensity, String?) -> Unit,
 ) {
@@ -113,7 +113,7 @@ fun LogWorkoutSheet(
                 onClick = {
                     val mins = duration.toIntOrNull() ?: 0
                     if (mins > 0) {
-                        onSave(today, type, mins, intensity, notes.ifBlank { null })
+                        onSave(date, type, mins, intensity, notes.ifBlank { null })
                         onDismiss()
                     }
                 },

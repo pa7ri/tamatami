@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.mobile.tamatami.ui.nav.BottomNavItem
@@ -27,7 +28,15 @@ fun TamatamiBottomBar(navController: NavHostController) {
                 onClick = {
                     if (!selected) {
                         navController.navigate(item.route) {
-                            popUpTo(TamatamiRoute.Home) { saveState = true }
+                            // Pop to the graph's start destination (saving its
+                            // state) so switching tabs never stacks screens and
+                            // each tab's state is preserved/restored — the
+                            // canonical Compose bottom-nav pattern. Popping to a
+                            // fixed route (Home) instead lost state for any tab
+                            // that had a screen pushed on top of it.
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
                             restoreState = true
                         }

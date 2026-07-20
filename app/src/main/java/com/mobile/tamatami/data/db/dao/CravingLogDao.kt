@@ -1,6 +1,8 @@
 package com.mobile.tamatami.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.mobile.tamatami.data.db.entity.CravingLogEntity
@@ -20,4 +22,14 @@ interface CravingLogDao {
 
     @Query("DELETE FROM craving_log WHERE date = :date")
     suspend fun deleteByDate(date: LocalDate)
+
+    // -- Backup ---------------------------------------------------------------
+    @Query("SELECT * FROM craving_log")
+    suspend fun getAll(): List<CravingLogEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rows: List<CravingLogEntity>)
+
+    @Query("DELETE FROM craving_log")
+    suspend fun clear()
 }

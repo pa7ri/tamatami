@@ -38,6 +38,7 @@ import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
+import com.mobile.tamatami.ui.screens.settings.sections.DataBackupSection
 import com.mobile.tamatami.ui.screens.settings.sections.DatePickerDialogCompat
 import com.mobile.tamatami.ui.screens.settings.sections.NumberStepperRow
 import com.mobile.tamatami.ui.screens.settings.sections.SettingsSectionCard
@@ -167,6 +168,14 @@ fun SettingsScreen(
                         onChange = viewModel::setIrregularCycles,
                     )
                 }
+            }
+
+            // -- Data (backup / restore) -------------------------------------
+            item {
+                DataBackupSection(
+                    backupRepository = container.backupRepository,
+                    today = container.clock.today(),
+                )
             }
 
             // -- About -------------------------------------------------------

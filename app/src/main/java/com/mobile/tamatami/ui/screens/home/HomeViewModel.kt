@@ -48,6 +48,13 @@ class HomeViewModel(
         viewModelScope.launch { dailyRepository.incrementWater(today) }
     }
 
+    fun removeWater() {
+        viewModelScope.launch {
+            val current = state.value.daily.waterGlasses
+            dailyRepository.setWater(today, (current - 1).coerceAtLeast(0))
+        }
+    }
+
     fun setMood(mood: Mood) {
         viewModelScope.launch { dailyRepository.setMood(today, mood) }
     }

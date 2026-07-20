@@ -1,6 +1,8 @@
 package com.mobile.tamatami.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.mobile.tamatami.data.db.entity.CycleEntryEntity
@@ -20,4 +22,14 @@ interface CycleEntryDao {
 
     @Upsert
     suspend fun upsert(entity: CycleEntryEntity)
+
+    // -- Backup ---------------------------------------------------------------
+    @Query("SELECT * FROM cycle_entry")
+    suspend fun getAll(): List<CycleEntryEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rows: List<CycleEntryEntity>)
+
+    @Query("DELETE FROM cycle_entry")
+    suspend fun clear()
 }

@@ -1,6 +1,8 @@
 package com.mobile.tamatami.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.mobile.tamatami.data.db.entity.HormoneLogEntity
@@ -23,4 +25,14 @@ interface HormoneLogDao {
 
     @Query("DELETE FROM hormone_log WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    // -- Backup ---------------------------------------------------------------
+    @Query("SELECT * FROM hormone_log")
+    suspend fun getAll(): List<HormoneLogEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rows: List<HormoneLogEntity>)
+
+    @Query("DELETE FROM hormone_log")
+    suspend fun clear()
 }

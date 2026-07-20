@@ -12,6 +12,8 @@ import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.training.WorkoutIntensity
+import com.mobile.tamatami.domain.training.WorkoutType
 import com.mobile.tamatami.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,6 +99,18 @@ class CalendarViewModel(
 
     fun setCraving(date: LocalDate, craving: CravingHint?) {
         viewModelScope.launch { dailyLogRepository.setCraving(date, craving) }
+    }
+
+    fun logWorkout(
+        date: LocalDate,
+        type: WorkoutType,
+        durationMinutes: Int,
+        intensity: WorkoutIntensity,
+        notes: String?,
+    ) {
+        viewModelScope.launch {
+            dailyLogRepository.logWorkout(date, type, durationMinutes, intensity, notes)
+        }
     }
 
     class Factory(

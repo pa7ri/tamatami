@@ -40,10 +40,10 @@ import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
-import com.mobile.tamatami.ui.nav.TamatamiRoute
 import com.mobile.tamatami.ui.screens.calendar.sections.DayStatusCard
 import com.mobile.tamatami.ui.screens.calendar.sections.MonthGrid
 import com.mobile.tamatami.ui.screens.calendar.sections.MonthHeader
+import com.mobile.tamatami.ui.screens.training.sections.LogWorkoutSheet
 import com.mobile.tamatami.ui.theme.PhaseFollicular
 import com.mobile.tamatami.ui.theme.PhaseLuteal
 import com.mobile.tamatami.ui.theme.PhaseMenstrual
@@ -68,6 +68,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
         ?: state.days.firstOrNull { it.isToday }
 
     var showLegend by remember { mutableStateOf(false) }
+    var logSheetOpen by remember { mutableStateOf(false) }
 
     TamatamiScaffold(
         title = "Calendar",
@@ -106,7 +107,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
                     onToggleSymptom = viewModel::toggleSymptom,
                     onWater = viewModel::setWater,
                     onCraving = viewModel::setCraving,
-                    onAddSession = { navController.navigate(TamatamiRoute.Training) },
+                    onAddSession = { logSheetOpen = true },
                 )
             }
             Spacer(Modifier.height(16.dp))
@@ -122,6 +123,19 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
             Legend()
             Spacer(Modifier.height(16.dp))
         }
+    }
+
+    // Log a training session against the day the card is currently showing —
+    // the selected day, or today when nothing is selected. Reuses the same
+    // sheet as the Training screen; the date is what makes it per-day.
+    if (logSheetOpen && displayedDay != null) {
+        LogWorkoutSheet(
+            date = displayedDay.date,
+            onDismiss = { logSheetOpen = false },
+            onSave = { date, type, mins, intensity, notes ->
+                viewModel.logWorkout(date, type, mins, intensity, notes)
+            },
+        )
     }
 }
 

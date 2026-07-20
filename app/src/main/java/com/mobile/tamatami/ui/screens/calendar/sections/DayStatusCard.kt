@@ -187,7 +187,7 @@ fun DayStatusCard(
             Spacer(Modifier.height(8.dp))
             AssistChip(
                 onClick = onAddSession,
-                label = { Text("Add session in Training") },
+                label = { Text("Add training session") },
             )
         }
     }

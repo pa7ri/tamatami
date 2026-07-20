@@ -13,4 +13,11 @@ interface TamagotchiStateDao {
 
     @Upsert
     suspend fun upsert(entity: TamagotchiStateEntity)
+
+    // -- Backup ---------------------------------------------------------------
+    @Query("SELECT * FROM tamagotchi_state WHERE id = 0 LIMIT 1")
+    suspend fun get(): TamagotchiStateEntity?
+
+    @Query("DELETE FROM tamagotchi_state")
+    suspend fun clear()
 }

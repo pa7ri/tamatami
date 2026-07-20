@@ -75,7 +75,7 @@ fun TrainingScreen(navController: NavHostController, container: AppContainer) {
 
     if (sheetOpen) {
         LogWorkoutSheet(
-            today = today,
+            date = today,
             onDismiss = { sheetOpen = false },
             onSave = viewModel::logWorkout,
         )

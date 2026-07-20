@@ -2,6 +2,7 @@ package com.mobile.tamatami.di
 
 import android.content.Context
 import androidx.room.Room
+import com.mobile.tamatami.data.backup.BackupRepository
 import com.mobile.tamatami.data.db.TamatamiDatabase
 import com.mobile.tamatami.data.db.dao.PeriodDayDao
 import com.mobile.tamatami.data.repository.CycleRepository
@@ -69,4 +70,6 @@ class AppContainer(context: Context) {
     val workoutRepository: WorkoutRepository by lazy {
         WorkoutRepository(db.workoutLogDao())
     }
+
+    val backupRepository: BackupRepository by lazy { BackupRepository(db) }
 }

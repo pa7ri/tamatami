@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.ui.screens.home.HomeUiState
 import com.mobile.tamatami.ui.tamagotchi.TamagotchiAvatar
-import com.mobile.tamatami.ui.theme.phaseBrush
+import com.mobile.tamatami.ui.theme.heroBackdrop
 
 @Composable
 fun TamaHeroSection(state: HomeUiState) {
@@ -29,7 +29,7 @@ fun TamaHeroSection(state: HomeUiState) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(phaseBrush(state.cycle.phase))
+            .background(heroBackdrop(state.cycle.phase))
             .padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {

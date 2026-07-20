@@ -100,6 +100,7 @@ fun HomeScreen(
                 QuickLogSection(
                     state = state,
                     onAddWater = viewModel::addWater,
+                    onRemoveWater = viewModel::removeWater,
                     onMoodSelected = viewModel::setMood,
                     onFlowSelected = viewModel::setFlow,
                 )

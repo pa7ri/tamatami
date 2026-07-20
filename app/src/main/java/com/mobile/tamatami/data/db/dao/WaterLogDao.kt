@@ -1,6 +1,8 @@
 package com.mobile.tamatami.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.mobile.tamatami.data.db.entity.WaterLogEntity
@@ -14,4 +16,14 @@ interface WaterLogDao {
 
     @Upsert
     suspend fun upsert(entity: WaterLogEntity)
+
+    // -- Backup ---------------------------------------------------------------
+    @Query("SELECT * FROM water_log")
+    suspend fun getAll(): List<WaterLogEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rows: List<WaterLogEntity>)
+
+    @Query("DELETE FROM water_log")
+    suspend fun clear()
 }
