@@ -57,7 +57,7 @@ fun QuickLogSection(
             modifier = Modifier.fillMaxWidth(),
         ) {
             WaterTile(
-                value = "${state.daily.waterGlasses}/${state.daily.waterGoal}",
+                value = "${state.daily.waterGlasses}/${state.waterGoal}",
                 onAdd = onAddWater,
                 onRemove = onRemoveWater,
                 modifier = Modifier.weight(1f),

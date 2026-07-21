@@ -41,6 +41,7 @@ class TamagotchiMoodEngineTest {
         symptoms = emptySet(),
         craving = null,
         workouts = emptyList(),
+        sleep = null,
     )
 
     @Test fun `luteal with two glasses is sad and thirsty`() {

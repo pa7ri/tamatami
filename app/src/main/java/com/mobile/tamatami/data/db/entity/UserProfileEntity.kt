@@ -21,4 +21,9 @@ data class UserProfileEntity(
     val irregularCycles: Boolean,
     val onboardingComplete: Boolean,
     val createdAt: Instant,
+    // Daily goals (user-editable in Settings). Defaults applied to new profiles
+    // and to rows migrated before these columns existed.
+    val dailyStepsGoal: Int = 8_000,
+    val sleepGoalMinutes: Int = 8 * 60,
+    val waterGoalGlasses: Int = 8,
 )

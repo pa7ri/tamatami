@@ -37,6 +37,7 @@ class HomeViewModel(
             cycle = cycle,
             daily = daily,
             tama = tama,
+            waterGoal = profile?.waterGoalGlasses ?: 8,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -45,13 +46,14 @@ class HomeViewModel(
     )
 
     fun addWater() {
-        viewModelScope.launch { dailyRepository.incrementWater(today) }
+        val goal = state.value.waterGoal
+        viewModelScope.launch { dailyRepository.incrementWater(today, goal) }
     }
 
     fun removeWater() {
         viewModelScope.launch {
             val current = state.value.daily.waterGlasses
-            dailyRepository.setWater(today, (current - 1).coerceAtLeast(0))
+            dailyRepository.setWater(today, (current - 1).coerceAtLeast(0), state.value.waterGoal)
         }
     }
 

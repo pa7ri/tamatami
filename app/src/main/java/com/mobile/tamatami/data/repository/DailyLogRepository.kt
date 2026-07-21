@@ -3,25 +3,31 @@ package com.mobile.tamatami.data.repository
 import com.mobile.tamatami.data.db.dao.CravingLogDao
 import com.mobile.tamatami.data.db.dao.MoodLogDao
 import com.mobile.tamatami.data.db.dao.PeriodDayDao
+import com.mobile.tamatami.data.db.dao.SleepLogDao
 import com.mobile.tamatami.data.db.dao.SymptomLogDao
 import com.mobile.tamatami.data.db.dao.WaterLogDao
 import com.mobile.tamatami.data.db.dao.WorkoutLogDao
 import com.mobile.tamatami.data.db.entity.CravingLogEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
+import com.mobile.tamatami.data.db.entity.SleepLogEntity
 import com.mobile.tamatami.data.db.entity.SymptomLogEntity
 import com.mobile.tamatami.data.db.entity.WaterLogEntity
 import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.domain.model.SleepSummary
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.sleep.SleepQualityEstimator
+import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 class DailyLogRepository(
@@ -31,6 +37,7 @@ class DailyLogRepository(
     private val symptomDao: SymptomLogDao,
     private val cravingDao: CravingLogDao,
     private val workoutDao: WorkoutLogDao,
+    private val sleepDao: SleepLogDao,
 ) {
     /**
      * Everything the user has logged for [date], live. Six sources combine
@@ -59,12 +66,15 @@ class DailyLogRepository(
             symptoms = symptoms.mapTo(LinkedHashSet()) { it.symptom },
             craving = craving?.craving,
             workouts = emptyList(),
+            sleep = null,
         )
     }.combine(workoutDao.observeByDate(date)) { snapshot, workouts ->
         snapshot.copy(workouts = workouts)
+    }.combine(sleepDao.observeByDate(date)) { snapshot, sleep ->
+        snapshot.copy(sleep = sleep?.toSummary())
     }
 
-    suspend fun incrementWater(date: LocalDate) {
+    suspend fun incrementWater(date: LocalDate, goal: Int = 8) {
         val current = waterDao.observeByDate(date).first()
         val next = (current?.glasses ?: 0) + 1
         waterDao.upsert(
@@ -72,7 +82,7 @@ class DailyLogRepository(
                 id = current?.id ?: 0,
                 date = date,
                 glasses = next,
-                goal = current?.goal ?: 8,
+                goal = goal,
             )
         )
     }
@@ -176,4 +186,40 @@ class DailyLogRepository(
     }
 
     suspend fun deleteWorkout(id: Long) = workoutDao.deleteById(id)
+
+    /** Recent nights (newest first) as summaries — feeds the expected-quality prediction. */
+    fun observeRecentSleep(limit: Int = 14): Flow<List<SleepSummary>> =
+        sleepDao.observeRecent(limit).map { rows -> rows.map { it.toSummary() } }
+
+    /**
+     * Log last night's sleep against [date] (the wake-up day). Bed/wake are
+     * minute-of-day; duration is computed here and already handles crossing
+     * midnight. One row per date (upsert overwrites).
+     */
+    suspend fun logSleep(
+        date: LocalDate,
+        bedMinuteOfDay: Int,
+        wakeMinuteOfDay: Int,
+        rating: SleepRating,
+    ) {
+        val current = sleepDao.observeByDate(date).first()
+        sleepDao.upsert(
+            SleepLogEntity(
+                id = current?.id ?: 0,
+                date = date,
+                bedMinuteOfDay = bedMinuteOfDay,
+                wakeMinuteOfDay = wakeMinuteOfDay,
+                durationMinutes = SleepQualityEstimator.durationMinutes(bedMinuteOfDay, wakeMinuteOfDay),
+                rating = rating,
+            )
+        )
+    }
 }
+
+private fun SleepLogEntity.toSummary(): SleepSummary = SleepSummary(
+    bedMinuteOfDay = bedMinuteOfDay,
+    wakeMinuteOfDay = wakeMinuteOfDay,
+    durationMinutes = durationMinutes,
+    rating = rating,
+    quality = SleepQualityEstimator.estimate(durationMinutes, rating),
+)

@@ -34,6 +34,7 @@ class BackupRepository(
             workouts = db.workoutLogDao().getAll().map { it.toDto() },
             symptoms = db.symptomLogDao().getAll().map { it.toDto() },
             cravings = db.cravingLogDao().getAll().map { it.toDto() },
+            sleeps = db.sleepLogDao().getAll().map { it.toDto() },
         )
         return json.encodeToString(TamatamiBackup.serializer(), backup)
     }
@@ -57,6 +58,7 @@ class BackupRepository(
             db.workoutLogDao().clear()
             db.symptomLogDao().clear()
             db.cravingLogDao().clear()
+            db.sleepLogDao().clear()
 
             backup.userProfile?.let { db.userProfileDao().upsert(it.toEntity()) }
             backup.tamagotchi?.let { db.tamagotchiStateDao().upsert(it.toEntity()) }
@@ -68,6 +70,7 @@ class BackupRepository(
             db.workoutLogDao().insertAll(backup.workouts.map { it.toEntity() })
             db.symptomLogDao().insertAll(backup.symptoms.map { it.toEntity() })
             db.cravingLogDao().insertAll(backup.cravings.map { it.toEntity() })
+            db.sleepLogDao().insertAll(backup.sleeps.map { it.toEntity() })
         }
     }
 

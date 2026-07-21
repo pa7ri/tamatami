@@ -25,6 +25,7 @@ fun NumberStepperRow(
     range: IntRange,
     onChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    step: Int = 1,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -33,7 +34,7 @@ fun NumberStepperRow(
         Text(label, modifier = Modifier.weight(1f))
         IconButton(
             enabled = value > range.first,
-            onClick = { onChange((value - 1).coerceIn(range)) },
+            onClick = { onChange((value - step).coerceIn(range)) },
         ) { Icon(Icons.Outlined.Remove, contentDescription = "Decrease $label") }
         Text(
             "$value $suffix",
@@ -41,7 +42,7 @@ fun NumberStepperRow(
         )
         IconButton(
             enabled = value < range.last,
-            onClick = { onChange((value + 1).coerceIn(range)) },
+            onClick = { onChange((value + step).coerceIn(range)) },
         ) { Icon(Icons.Outlined.Add, contentDescription = "Increase $label") }
     }
 }

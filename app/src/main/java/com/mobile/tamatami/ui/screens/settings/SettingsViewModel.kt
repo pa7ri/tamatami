@@ -71,6 +71,9 @@ class SettingsViewModel(
                         tryingToConceive = profile.tryingToConceive,
                         onContraception = profile.onContraception,
                         irregularCycles = profile.irregularCycles,
+                        dailyStepsGoal = profile.dailyStepsGoal,
+                        sleepGoalHours = (profile.sleepGoalMinutes / 60).coerceAtLeast(1),
+                        waterGoalGlasses = profile.waterGoalGlasses,
                     )
                 }
             } else {
@@ -89,6 +92,9 @@ class SettingsViewModel(
     fun setTryingToConceive(value: Boolean) = draft.update { it.copy(tryingToConceive = value) }
     fun setOnContraception(value: Boolean) = draft.update { it.copy(onContraception = value) }
     fun setIrregularCycles(value: Boolean) = draft.update { it.copy(irregularCycles = value) }
+    fun setStepsGoal(steps: Int) = draft.update { it.copy(dailyStepsGoal = steps) }
+    fun setSleepGoalHours(hours: Int) = draft.update { it.copy(sleepGoalHours = hours) }
+    fun setWaterGoal(glasses: Int) = draft.update { it.copy(waterGoalGlasses = glasses) }
 
     fun save(onSaved: () -> Unit = {}) {
         val d = draft.value
@@ -106,6 +112,9 @@ class SettingsViewModel(
             // Preserve onboarding flag / createdAt from the loaded row.
             onboardingComplete = o?.onboardingComplete ?: true,
             createdAt = o?.createdAt ?: Instant.now(),
+            dailyStepsGoal = d.dailyStepsGoal,
+            sleepGoalMinutes = d.sleepGoalHours * 60,
+            waterGoalGlasses = d.waterGoalGlasses,
         )
         viewModelScope.launch {
             userRepository.saveProfile(saved)
@@ -132,4 +141,7 @@ private fun UserProfileEntity.differsFrom(d: SettingsUiState): Boolean =
         avgPeriodLengthDays != d.avgPeriodLengthDays ||
         tryingToConceive != d.tryingToConceive ||
         onContraception != d.onContraception ||
-        irregularCycles != d.irregularCycles
+        irregularCycles != d.irregularCycles ||
+        dailyStepsGoal != d.dailyStepsGoal ||
+        sleepGoalMinutes != d.sleepGoalHours * 60 ||
+        waterGoalGlasses != d.waterGoalGlasses

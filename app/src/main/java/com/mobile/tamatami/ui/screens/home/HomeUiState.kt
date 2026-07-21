@@ -11,6 +11,8 @@ data class HomeUiState(
     val cycle: CycleSnapshot,
     val daily: DailySnapshot,
     val tama: TamagotchiState,
+    /** App-wide water goal from the profile (overrides the per-row default). */
+    val waterGoal: Int = 8,
 ) {
     companion object {
         val Empty = HomeUiState(
@@ -25,6 +27,7 @@ data class HomeUiState(
             ),
             daily = DailySnapshot.empty(LocalDate.now()),
             tama = TamagotchiState.Idle,
+            waterGoal = 8,
         )
     }
 }

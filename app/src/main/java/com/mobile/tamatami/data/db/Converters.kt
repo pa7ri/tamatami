@@ -6,6 +6,7 @@ import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import java.time.Instant
@@ -46,4 +47,8 @@ class Converters {
     @TypeConverter fun cravingToString(value: CravingHint?): String? = value?.name
     @TypeConverter fun stringToCraving(value: String?): CravingHint? =
         value?.let(CravingHint::valueOf)
+
+    @TypeConverter fun sleepRatingToString(value: SleepRating?): String? = value?.name
+    @TypeConverter fun stringToSleepRating(value: String?): SleepRating? =
+        value?.let(SleepRating::valueOf)
 }

@@ -18,6 +18,9 @@ data class SettingsUiState(
     val tryingToConceive: Boolean = false,
     val onContraception: Boolean = false,
     val irregularCycles: Boolean = false,
+    val dailyStepsGoal: Int = 8_000,
+    val sleepGoalHours: Int = 8,
+    val waterGoalGlasses: Int = 8,
 ) {
     companion object {
         val Empty = SettingsUiState()

@@ -9,6 +9,7 @@ import com.mobile.tamatami.data.db.dao.HormoneLogDao
 import com.mobile.tamatami.data.db.dao.MoodLogDao
 import com.mobile.tamatami.data.db.dao.PeriodDayDao
 import com.mobile.tamatami.data.db.dao.SymptomLogDao
+import com.mobile.tamatami.data.db.dao.SleepLogDao
 import com.mobile.tamatami.data.db.dao.TamagotchiStateDao
 import com.mobile.tamatami.data.db.dao.UserProfileDao
 import com.mobile.tamatami.data.db.dao.WaterLogDao
@@ -19,6 +20,7 @@ import com.mobile.tamatami.data.db.entity.HormoneLogEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
 import com.mobile.tamatami.data.db.entity.SymptomLogEntity
+import com.mobile.tamatami.data.db.entity.SleepLogEntity
 import com.mobile.tamatami.data.db.entity.TamagotchiStateEntity
 import com.mobile.tamatami.data.db.entity.UserProfileEntity
 import com.mobile.tamatami.data.db.entity.WaterLogEntity
@@ -36,8 +38,9 @@ import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
         WorkoutLogEntity::class,
         SymptomLogEntity::class,
         CravingLogEntity::class,
+        SleepLogEntity::class,
     ],
-    version = 3,
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -52,6 +55,7 @@ abstract class TamatamiDatabase : RoomDatabase() {
     abstract fun workoutLogDao(): WorkoutLogDao
     abstract fun symptomLogDao(): SymptomLogDao
     abstract fun cravingLogDao(): CravingLogDao
+    abstract fun sleepLogDao(): SleepLogDao
 
     companion object {
         const val NAME = "tamatami.db"

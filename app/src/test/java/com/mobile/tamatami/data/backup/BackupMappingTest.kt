@@ -6,6 +6,7 @@ import com.mobile.tamatami.data.db.entity.CycleEntryEntity
 import com.mobile.tamatami.data.db.entity.HormoneLogEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
+import com.mobile.tamatami.data.db.entity.SleepLogEntity
 import com.mobile.tamatami.data.db.entity.SymptomLogEntity
 import com.mobile.tamatami.data.db.entity.TamagotchiStateEntity
 import com.mobile.tamatami.data.db.entity.UserProfileEntity
@@ -16,6 +17,7 @@ import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import kotlinx.serialization.json.Json
@@ -72,6 +74,9 @@ class BackupMappingTest {
             ),
             symptoms = listOf(SymptomLogEntity(LocalDate.ofEpochDay(d), Symptom.entries.first()).toDto()),
             cravings = listOf(CravingLogEntity(1, LocalDate.ofEpochDay(d), CravingHint.entries.first()).toDto()),
+            sleeps = listOf(
+                SleepLogEntity(1, LocalDate.ofEpochDay(d), 1380, 420, 480, SleepRating.RESTFUL).toDto(),
+            ),
         )
     }
 
@@ -91,6 +96,9 @@ class BackupMappingTest {
 
         val symptom = SymptomLogEntity(date, Symptom.entries.first())
         assertThat(symptom.toDto().toEntity()).isEqualTo(symptom)
+
+        val sleep = SleepLogEntity(9, date, 1380, 420, 480, SleepRating.OKAY)
+        assertThat(sleep.toDto().toEntity()).isEqualTo(sleep)
     }
 
     @Test

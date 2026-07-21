@@ -5,6 +5,7 @@ import com.mobile.tamatami.data.db.entity.CycleEntryEntity
 import com.mobile.tamatami.data.db.entity.HormoneLogEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
+import com.mobile.tamatami.data.db.entity.SleepLogEntity
 import com.mobile.tamatami.data.db.entity.SymptomLogEntity
 import com.mobile.tamatami.data.db.entity.TamagotchiStateEntity
 import com.mobile.tamatami.data.db.entity.UserProfileEntity
@@ -15,6 +16,7 @@ import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import kotlinx.serialization.Serializable
@@ -32,7 +34,7 @@ import java.time.LocalDate
  * [BackupRepository.import] if backward compatibility is ever needed.
  */
 const val BACKUP_TYPE = "tamatami-backup"
-const val BACKUP_VERSION = 1
+const val BACKUP_VERSION = 3
 
 @Serializable
 data class TamatamiBackup(
@@ -49,6 +51,7 @@ data class TamatamiBackup(
     val workouts: List<WorkoutLogDto> = emptyList(),
     val symptoms: List<SymptomLogDto> = emptyList(),
     val cravings: List<CravingLogDto> = emptyList(),
+    val sleeps: List<SleepLogDto> = emptyList(),
 )
 
 // ---------------------------------------------------------------- per-table DTOs
@@ -65,6 +68,9 @@ data class UserProfileDto(
     val irregularCycles: Boolean,
     val onboardingComplete: Boolean,
     val createdAtEpochMs: Long,
+    val dailyStepsGoal: Int = 8_000,
+    val sleepGoalMinutes: Int = 8 * 60,
+    val waterGoalGlasses: Int = 8,
 )
 
 @Serializable
@@ -140,6 +146,16 @@ data class CravingLogDto(
     val craving: String,
 )
 
+@Serializable
+data class SleepLogDto(
+    val id: Long,
+    val dateEpochDay: Long,
+    val bedMinuteOfDay: Int,
+    val wakeMinuteOfDay: Int,
+    val durationMinutes: Int,
+    val rating: String,
+)
+
 // ----------------------------------------------------- entity <-> DTO mapping
 // Kept next to the DTOs so the round-trip is defined in one place. Enum parsing
 // uses valueOf, matching the app's Room TypeConverters.
@@ -147,6 +163,7 @@ data class CravingLogDto(
 fun UserProfileEntity.toDto() = UserProfileDto(
     id, tamaName, lastPeriodStart.toEpochDay(), avgCycleLengthDays, avgPeriodLengthDays,
     tryingToConceive, onContraception, irregularCycles, onboardingComplete, createdAt.toEpochMilli(),
+    dailyStepsGoal, sleepGoalMinutes, waterGoalGlasses,
 )
 
 fun UserProfileDto.toEntity() = UserProfileEntity(
@@ -160,6 +177,9 @@ fun UserProfileDto.toEntity() = UserProfileEntity(
     irregularCycles = irregularCycles,
     onboardingComplete = onboardingComplete,
     createdAt = Instant.ofEpochMilli(createdAtEpochMs),
+    dailyStepsGoal = dailyStepsGoal,
+    sleepGoalMinutes = sleepGoalMinutes,
+    waterGoalGlasses = waterGoalGlasses,
 )
 
 fun TamagotchiStateEntity.toDto() = TamagotchiStateDto(id, lastMood.name, hatched, accessoriesJson)
@@ -235,4 +255,16 @@ fun CravingLogDto.toEntity() = CravingLogEntity(
     id = id,
     date = LocalDate.ofEpochDay(dateEpochDay),
     craving = CravingHint.valueOf(craving),
+)
+
+fun SleepLogEntity.toDto() = SleepLogDto(
+    id, date.toEpochDay(), bedMinuteOfDay, wakeMinuteOfDay, durationMinutes, rating.name,
+)
+fun SleepLogDto.toEntity() = SleepLogEntity(
+    id = id,
+    date = LocalDate.ofEpochDay(dateEpochDay),
+    bedMinuteOfDay = bedMinuteOfDay,
+    wakeMinuteOfDay = wakeMinuteOfDay,
+    durationMinutes = durationMinutes,
+    rating = SleepRating.valueOf(rating),
 )

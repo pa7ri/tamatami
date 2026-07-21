@@ -149,6 +149,36 @@ fun SettingsScreen(
                 }
             }
 
+            // -- Daily goals -------------------------------------------------
+            item {
+                SettingsSectionCard(title = "Daily goals") {
+                    NumberStepperRow(
+                        label = "Steps",
+                        suffix = "steps",
+                        value = state.dailyStepsGoal,
+                        range = MIN_STEPS..MAX_STEPS,
+                        step = 500,
+                        onChange = viewModel::setStepsGoal,
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    NumberStepperRow(
+                        label = "Sleep",
+                        suffix = "hours",
+                        value = state.sleepGoalHours,
+                        range = MIN_SLEEP..MAX_SLEEP,
+                        onChange = viewModel::setSleepGoalHours,
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    NumberStepperRow(
+                        label = "Water",
+                        suffix = "glasses",
+                        value = state.waterGoalGlasses,
+                        range = MIN_WATER..MAX_WATER,
+                        onChange = viewModel::setWaterGoal,
+                    )
+                }
+            }
+
             // -- Preferences -------------------------------------------------
             item {
                 SettingsSectionCard(title = "Preferences") {
@@ -227,6 +257,12 @@ private const val MIN_CYCLE = 20
 private const val MAX_CYCLE = 45
 private const val MIN_PERIOD = 1
 private const val MAX_PERIOD = 10
+private const val MIN_STEPS = 1_000
+private const val MAX_STEPS = 30_000
+private const val MIN_SLEEP = 4
+private const val MAX_SLEEP = 12
+private const val MIN_WATER = 1
+private const val MAX_WATER = 16
 
 // Hard-coded for now — pulling versionName from BuildConfig requires
 // buildConfig=true in build.gradle.kts, which the project hasn't enabled.

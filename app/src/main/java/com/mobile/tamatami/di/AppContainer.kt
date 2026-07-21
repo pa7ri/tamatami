@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.mobile.tamatami.data.backup.BackupRepository
 import com.mobile.tamatami.data.db.TamatamiDatabase
+import com.mobile.tamatami.data.health.StepDataSource
 import com.mobile.tamatami.data.db.dao.PeriodDayDao
 import com.mobile.tamatami.data.repository.CycleRepository
 import com.mobile.tamatami.data.repository.DailyLogRepository
@@ -21,11 +22,13 @@ import com.mobile.tamatami.util.SystemClock
  */
 class AppContainer(context: Context) {
 
+    private val appContext: Context = context.applicationContext
+
     val clock: Clock = SystemClock
 
     private val db: TamatamiDatabase by lazy {
         Room.databaseBuilder(
-            context.applicationContext,
+            appContext,
             TamatamiDatabase::class.java,
             TamatamiDatabase.NAME,
         )
@@ -56,6 +59,7 @@ class AppContainer(context: Context) {
             symptomDao = db.symptomLogDao(),
             cravingDao = db.cravingLogDao(),
             workoutDao = db.workoutLogDao(),
+            sleepDao = db.sleepLogDao(),
         )
     }
 
@@ -72,4 +76,6 @@ class AppContainer(context: Context) {
     }
 
     val backupRepository: BackupRepository by lazy { BackupRepository(db) }
+
+    val stepDataSource: StepDataSource by lazy { StepDataSource(appContext) }
 }
