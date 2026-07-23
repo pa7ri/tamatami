@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">tamatami</string>
+
+    <!-- Reminder notification channels -->
+    <string name="channel_period_name">Period reminders</string>
+    <string name="channel_period_desc">A heads-up the day before your next expected period.</string>
+    <string name="channel_water_name">Water reminders</string>
+    <string name="channel_water_desc">Nudges when you\'re falling behind your daily water goal.</string>
+    <string name="channel_pills_name">Medication reminders</string>
+    <string name="channel_pills_desc">Reminders to take your scheduled medications.</string>
+
+    <!-- Reminder notification content -->
+    <string name="reminder_period_title">Period coming tomorrow</string>
+    <string name="reminder_period_text">Your next period is expected tomorrow. A good day to prepare.</string>
+    <string name="reminder_water_title">Time for some water</string>
+    <string name="reminder_water_text">You\'re a little behind on water today — grab a glass.</string>
+    <string name="reminder_pills_title">Medication reminder</string>
+    <string name="reminder_pills_text">Time to take %1$s (%2$s).</string>
 </resources>

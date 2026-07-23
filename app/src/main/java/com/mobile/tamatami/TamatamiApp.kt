@@ -10,5 +10,6 @@ class TamatamiApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(applicationContext)
+        container.reminderScheduler.initialize()
     }
 }

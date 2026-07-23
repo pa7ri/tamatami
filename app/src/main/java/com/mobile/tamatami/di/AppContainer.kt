@@ -9,9 +9,12 @@ import com.mobile.tamatami.data.db.dao.PeriodDayDao
 import com.mobile.tamatami.data.repository.CycleRepository
 import com.mobile.tamatami.data.repository.DailyLogRepository
 import com.mobile.tamatami.data.repository.HormoneRepository
+import com.mobile.tamatami.data.repository.MedicationRepository
 import com.mobile.tamatami.data.repository.TamagotchiRepository
 import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.data.repository.WorkoutRepository
+import com.mobile.tamatami.notifications.Notifier
+import com.mobile.tamatami.notifications.ReminderScheduler
 import com.mobile.tamatami.util.Clock
 import com.mobile.tamatami.util.SystemClock
 
@@ -78,4 +81,12 @@ class AppContainer(context: Context) {
     val backupRepository: BackupRepository by lazy { BackupRepository(db) }
 
     val stepDataSource: StepDataSource by lazy { StepDataSource(appContext) }
+
+    val medicationRepository: MedicationRepository by lazy {
+        MedicationRepository(db.medicationDao(), db.medicationIntakeDao())
+    }
+
+    val notifier: Notifier by lazy { Notifier(appContext) }
+
+    val reminderScheduler: ReminderScheduler by lazy { ReminderScheduler(appContext) }
 }

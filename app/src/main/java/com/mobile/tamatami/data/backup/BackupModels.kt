@@ -3,6 +3,8 @@ package com.mobile.tamatami.data.backup
 import com.mobile.tamatami.data.db.entity.CravingLogEntity
 import com.mobile.tamatami.data.db.entity.CycleEntryEntity
 import com.mobile.tamatami.data.db.entity.HormoneLogEntity
+import com.mobile.tamatami.data.db.entity.MedicationEntity
+import com.mobile.tamatami.data.db.entity.MedicationIntakeEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
 import com.mobile.tamatami.data.db.entity.SleepLogEntity
@@ -19,6 +21,7 @@ import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
+import com.mobile.tamatami.domain.medication.TimeOfDay
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
@@ -34,7 +37,7 @@ import java.time.LocalDate
  * [BackupRepository.import] if backward compatibility is ever needed.
  */
 const val BACKUP_TYPE = "tamatami-backup"
-const val BACKUP_VERSION = 3
+const val BACKUP_VERSION = 4
 
 @Serializable
 data class TamatamiBackup(
@@ -52,6 +55,8 @@ data class TamatamiBackup(
     val symptoms: List<SymptomLogDto> = emptyList(),
     val cravings: List<CravingLogDto> = emptyList(),
     val sleeps: List<SleepLogDto> = emptyList(),
+    val medications: List<MedicationDto> = emptyList(),
+    val medicationIntakes: List<MedicationIntakeDto> = emptyList(),
 )
 
 // ---------------------------------------------------------------- per-table DTOs
@@ -154,6 +159,24 @@ data class SleepLogDto(
     val wakeMinuteOfDay: Int,
     val durationMinutes: Int,
     val rating: String,
+)
+
+@Serializable
+data class MedicationDto(
+    val id: Long,
+    val name: String,
+    val dosesPerDay: Int,
+    val slotsMask: Int,
+    val active: Boolean,
+    val createdAtEpochMs: Long,
+)
+
+@Serializable
+data class MedicationIntakeDto(
+    val id: Long,
+    val medicationId: Long,
+    val dateEpochDay: Long,
+    val slot: String,
 )
 
 // ----------------------------------------------------- entity <-> DTO mapping
@@ -267,4 +290,24 @@ fun SleepLogDto.toEntity() = SleepLogEntity(
     wakeMinuteOfDay = wakeMinuteOfDay,
     durationMinutes = durationMinutes,
     rating = SleepRating.valueOf(rating),
+)
+
+fun MedicationEntity.toDto() = MedicationDto(
+    id, name, dosesPerDay, slotsMask, active, createdAt.toEpochMilli(),
+)
+fun MedicationDto.toEntity() = MedicationEntity(
+    id = id,
+    name = name,
+    dosesPerDay = dosesPerDay,
+    slotsMask = slotsMask,
+    active = active,
+    createdAt = Instant.ofEpochMilli(createdAtEpochMs),
+)
+
+fun MedicationIntakeEntity.toDto() = MedicationIntakeDto(id, medicationId, date.toEpochDay(), slot.name)
+fun MedicationIntakeDto.toEntity() = MedicationIntakeEntity(
+    id = id,
+    medicationId = medicationId,
+    date = LocalDate.ofEpochDay(dateEpochDay),
+    slot = TimeOfDay.valueOf(slot),
 )

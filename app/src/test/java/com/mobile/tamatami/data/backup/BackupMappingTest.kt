@@ -4,6 +4,8 @@ import com.google.common.truth.Truth.assertThat
 import com.mobile.tamatami.data.db.entity.CravingLogEntity
 import com.mobile.tamatami.data.db.entity.CycleEntryEntity
 import com.mobile.tamatami.data.db.entity.HormoneLogEntity
+import com.mobile.tamatami.data.db.entity.MedicationEntity
+import com.mobile.tamatami.data.db.entity.MedicationIntakeEntity
 import com.mobile.tamatami.data.db.entity.MoodLogEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
 import com.mobile.tamatami.data.db.entity.SleepLogEntity
@@ -17,6 +19,7 @@ import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.nutrition.CravingHint
+import com.mobile.tamatami.domain.medication.TimeOfDay
 import com.mobile.tamatami.domain.sleep.SleepRating
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
@@ -77,6 +80,14 @@ class BackupMappingTest {
             sleeps = listOf(
                 SleepLogEntity(1, LocalDate.ofEpochDay(d), 1380, 420, 480, SleepRating.RESTFUL).toDto(),
             ),
+            medications = listOf(
+                MedicationEntity(1, "Iron", 1, 0b001, true, Instant.ofEpochMilli(1_650_000_000_000L)).toDto(),
+                MedicationEntity(2, "Vitamin D", 2, 0b101, false, Instant.ofEpochMilli(1_651_000_000_000L)).toDto(),
+            ),
+            medicationIntakes = listOf(
+                MedicationIntakeEntity(1, 1, LocalDate.ofEpochDay(d), TimeOfDay.MORNING).toDto(),
+                MedicationIntakeEntity(2, 2, LocalDate.ofEpochDay(d), TimeOfDay.EVENING).toDto(),
+            ),
         )
     }
 
@@ -99,6 +110,12 @@ class BackupMappingTest {
 
         val sleep = SleepLogEntity(9, date, 1380, 420, 480, SleepRating.OKAY)
         assertThat(sleep.toDto().toEntity()).isEqualTo(sleep)
+
+        val medication = MedicationEntity(5, "Folate", 3, 0b111, true, Instant.ofEpochMilli(987654321L))
+        assertThat(medication.toDto().toEntity()).isEqualTo(medication)
+
+        val intake = MedicationIntakeEntity(4, 5, date, TimeOfDay.AFTERNOON)
+        assertThat(intake.toDto().toEntity()).isEqualTo(intake)
     }
 
     @Test

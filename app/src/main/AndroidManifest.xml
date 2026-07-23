@@ -5,6 +5,11 @@
     <!-- Health Connect: read daily step totals only. -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
 
+    <!-- Post reminder notifications (period / water / medication). Runtime grant
+         on API 33+; reminders are scheduled regardless but only display once
+         the user enables notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Discover the Health Connect app when checking availability. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

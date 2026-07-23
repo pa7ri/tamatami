@@ -80,6 +80,8 @@ dependencies {
 
     implementation(libs.androidx.health.connect)
 
+    implementation(libs.androidx.work.runtime.ktx)
+
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.mockk)

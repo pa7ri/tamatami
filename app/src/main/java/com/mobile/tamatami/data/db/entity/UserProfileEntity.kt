@@ -26,4 +26,10 @@ data class UserProfileEntity(
     val dailyStepsGoal: Int = 8_000,
     val sleepGoalMinutes: Int = 8 * 60,
     val waterGoalGlasses: Int = 8,
+    // Reminder config (user-editable in Settings). Defaults applied to new
+    // profiles and to rows migrated before these columns existed.
+    val remindPeriodEnabled: Boolean = true,
+    val remindWaterEnabled: Boolean = false,
+    val waterReminderIntervalHours: Int = 3,
+    val remindPillsEnabled: Boolean = true,
 )

@@ -35,6 +35,8 @@ class BackupRepository(
             symptoms = db.symptomLogDao().getAll().map { it.toDto() },
             cravings = db.cravingLogDao().getAll().map { it.toDto() },
             sleeps = db.sleepLogDao().getAll().map { it.toDto() },
+            medications = db.medicationDao().getAll().map { it.toDto() },
+            medicationIntakes = db.medicationIntakeDao().getAll().map { it.toDto() },
         )
         return json.encodeToString(TamatamiBackup.serializer(), backup)
     }
@@ -59,6 +61,9 @@ class BackupRepository(
             db.symptomLogDao().clear()
             db.cravingLogDao().clear()
             db.sleepLogDao().clear()
+            // Intakes reference a medication id, so clear them before the meds.
+            db.medicationIntakeDao().clear()
+            db.medicationDao().clear()
 
             backup.userProfile?.let { db.userProfileDao().upsert(it.toEntity()) }
             backup.tamagotchi?.let { db.tamagotchiStateDao().upsert(it.toEntity()) }
@@ -71,6 +76,9 @@ class BackupRepository(
             db.symptomLogDao().insertAll(backup.symptoms.map { it.toEntity() })
             db.cravingLogDao().insertAll(backup.cravings.map { it.toEntity() })
             db.sleepLogDao().insertAll(backup.sleeps.map { it.toEntity() })
+            // Insert meds before intakes, mirroring the clear order in reverse.
+            db.medicationDao().insertAll(backup.medications.map { it.toEntity() })
+            db.medicationIntakeDao().insertAll(backup.medicationIntakes.map { it.toEntity() })
         }
     }
 
