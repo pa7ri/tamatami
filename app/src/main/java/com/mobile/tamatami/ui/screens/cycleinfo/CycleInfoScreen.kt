@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Medication
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -143,6 +144,20 @@ fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
                         },
                         modifier = Modifier.clickable {
                             navController.navigate(TamatamiRoute.Hormones)
+                        },
+                    )
+                }
+            }
+            item {
+                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                    ListItem(
+                        headlineContent = { Text("Track medication") },
+                        supportingContent = { Text("Pill, birth control, or daily supplements") },
+                        leadingContent = {
+                            Icon(Icons.Outlined.Medication, contentDescription = null)
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate(TamatamiRoute.Pills)
                         },
                     )
                 }

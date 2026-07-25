@@ -74,6 +74,9 @@ class SettingsViewModel(
                         dailyStepsGoal = profile.dailyStepsGoal,
                         sleepGoalHours = (profile.sleepGoalMinutes / 60).coerceAtLeast(1),
                         waterGoalGlasses = profile.waterGoalGlasses,
+                        remindPeriodEnabled = profile.remindPeriodEnabled,
+                        remindWaterEnabled = profile.remindWaterEnabled,
+                        remindPillsEnabled = profile.remindPillsEnabled,
                     )
                 }
             } else {
@@ -95,6 +98,9 @@ class SettingsViewModel(
     fun setStepsGoal(steps: Int) = draft.update { it.copy(dailyStepsGoal = steps) }
     fun setSleepGoalHours(hours: Int) = draft.update { it.copy(sleepGoalHours = hours) }
     fun setWaterGoal(glasses: Int) = draft.update { it.copy(waterGoalGlasses = glasses) }
+    fun setRemindPeriod(value: Boolean) = draft.update { it.copy(remindPeriodEnabled = value) }
+    fun setRemindWater(value: Boolean) = draft.update { it.copy(remindWaterEnabled = value) }
+    fun setRemindPills(value: Boolean) = draft.update { it.copy(remindPillsEnabled = value) }
 
     fun save(onSaved: () -> Unit = {}) {
         val d = draft.value
@@ -115,6 +121,11 @@ class SettingsViewModel(
             dailyStepsGoal = d.dailyStepsGoal,
             sleepGoalMinutes = d.sleepGoalHours * 60,
             waterGoalGlasses = d.waterGoalGlasses,
+            remindPeriodEnabled = d.remindPeriodEnabled,
+            remindWaterEnabled = d.remindWaterEnabled,
+            remindPillsEnabled = d.remindPillsEnabled,
+            // Not surfaced in the UI — preserve whatever was persisted.
+            waterReminderIntervalHours = o?.waterReminderIntervalHours ?: 3,
         )
         viewModelScope.launch {
             userRepository.saveProfile(saved)
@@ -144,4 +155,7 @@ private fun UserProfileEntity.differsFrom(d: SettingsUiState): Boolean =
         irregularCycles != d.irregularCycles ||
         dailyStepsGoal != d.dailyStepsGoal ||
         sleepGoalMinutes != d.sleepGoalHours * 60 ||
-        waterGoalGlasses != d.waterGoalGlasses
+        waterGoalGlasses != d.waterGoalGlasses ||
+        remindPeriodEnabled != d.remindPeriodEnabled ||
+        remindWaterEnabled != d.remindWaterEnabled ||
+        remindPillsEnabled != d.remindPillsEnabled

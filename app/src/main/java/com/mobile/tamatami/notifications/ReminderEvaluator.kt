@@ -28,6 +28,9 @@ object ReminderEvaluator {
      * @param now current local time.
      * @param activeMeds active medications to consider.
      * @param takenByMed slots already logged as taken today, keyed by medication id.
+     * @param remindPeriod whether period reminders are enabled by the user.
+     * @param remindWater whether water reminders are enabled by the user.
+     * @param remindPills whether medication reminders are enabled by the user.
      */
     fun evaluate(
         daysUntilNextPeriod: Int?,
@@ -36,9 +39,12 @@ object ReminderEvaluator {
         now: LocalTime,
         activeMeds: List<MedicationEntity>,
         takenByMed: Map<Long, Set<TimeOfDay>>,
+        remindPeriod: Boolean = true,
+        remindWater: Boolean = true,
+        remindPills: Boolean = true,
     ): Decision {
         val slot = ReminderLogic.currentPillSlot(now)
-        val pillSlots = if (slot == null) {
+        val pillSlots = if (!remindPills || slot == null) {
             emptyMap()
         } else {
             activeMeds
@@ -48,8 +54,8 @@ object ReminderEvaluator {
         }
 
         return Decision(
-            period = ReminderLogic.isPeriodReminderDue(daysUntilNextPeriod),
-            water = ReminderLogic.isWaterBehindPace(glasses, goal, now),
+            period = remindPeriod && ReminderLogic.isPeriodReminderDue(daysUntilNextPeriod),
+            water = remindWater && ReminderLogic.isWaterBehindPace(glasses, goal, now),
             pillSlots = pillSlots,
         )
     }

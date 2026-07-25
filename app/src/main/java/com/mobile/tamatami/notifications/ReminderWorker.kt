@@ -37,6 +37,7 @@ class ReminderWorker(
 
         val cycle = container.cycleRepository.observeTodayCycle(today).first()
         val daily = container.dailyLogRepository.observeToday(today).first()
+        val profile = container.userRepository.getProfile()
         val activeMeds = container.medicationRepository.activeMedications()
         val takenByMed = activeMeds.associate { med ->
             med.id to container.medicationRepository.takenSlotsFor(today, med.id)
@@ -49,6 +50,10 @@ class ReminderWorker(
             now = now,
             activeMeds = activeMeds,
             takenByMed = takenByMed,
+            // No profile yet (pre-onboarding) → fall back to defaults.
+            remindPeriod = profile?.remindPeriodEnabled ?: true,
+            remindWater = profile?.remindWaterEnabled ?: true,
+            remindPills = profile?.remindPillsEnabled ?: true,
         )
 
         val notifier = container.notifier

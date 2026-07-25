@@ -18,6 +18,7 @@ sealed interface TamatamiRoute {
     @Serializable data object CycleInfo : TamatamiRoute
     @Serializable data object Nutrition : TamatamiRoute
     @Serializable data object Hormones : TamatamiRoute
+    @Serializable data object Pills : TamatamiRoute
     @Serializable data object Settings : TamatamiRoute
 
     // Onboarding step destinations -------------------------------------------

@@ -21,6 +21,7 @@ import com.mobile.tamatami.ui.screens.cycleinfo.CycleInfoScreen
 import com.mobile.tamatami.ui.screens.home.HomeScreen
 import com.mobile.tamatami.ui.screens.hormones.HormonesScreen
 import com.mobile.tamatami.ui.screens.nutrition.NutritionScreen
+import com.mobile.tamatami.ui.screens.pills.PillsScreen
 import com.mobile.tamatami.ui.screens.onboarding.onboardingGraph
 import com.mobile.tamatami.ui.screens.settings.SettingsScreen
 import com.mobile.tamatami.ui.screens.training.TrainingScreen
@@ -63,6 +64,7 @@ fun TamatamiNavHost(container: AppContainer) {
         composable<TamatamiRoute.Training> { TrainingScreen(navController, container) }
         composable<TamatamiRoute.Nutrition> { NutritionScreen(navController, container) }
         composable<TamatamiRoute.Hormones> { HormonesScreen(navController, container) }
+        composable<TamatamiRoute.Pills> { PillsScreen(navController, container) }
         composable<TamatamiRoute.CycleInfo> { CycleInfoScreen(navController, container) }
         composable<TamatamiRoute.Settings> { SettingsScreen(navController, container) }
     }

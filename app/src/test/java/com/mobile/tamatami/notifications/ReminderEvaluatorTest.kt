@@ -105,4 +105,52 @@ class ReminderEvaluatorTest {
         )
         assertThat(decision.pillSlots).isEmpty()
     }
+
+    @Test
+    fun `disabled period reminder is suppressed while others still fire`() {
+        val morningMed = med(1, setOf(TimeOfDay.MORNING))
+        val decision = ReminderEvaluator.evaluate(
+            daysUntilNextPeriod = 1, // would otherwise fire
+            glasses = 0,
+            goal = 8,
+            now = LocalTime.of(10, 0),
+            activeMeds = listOf(morningMed),
+            takenByMed = emptyMap(),
+            remindPeriod = false,
+        )
+        assertThat(decision.period).isFalse()
+        // Water + pills unaffected.
+        assertThat(decision.water).isTrue()
+        assertThat(decision.pillSlots).containsExactly(1L, TimeOfDay.MORNING)
+    }
+
+    @Test
+    fun `disabled water reminder is suppressed while others still fire`() {
+        val decision = ReminderEvaluator.evaluate(
+            daysUntilNextPeriod = 1,
+            glasses = 0, // would otherwise be behind pace
+            goal = 8,
+            now = LocalTime.of(15, 0),
+            activeMeds = emptyList(),
+            takenByMed = emptyMap(),
+            remindWater = false,
+        )
+        assertThat(decision.water).isFalse()
+        assertThat(decision.period).isTrue()
+    }
+
+    @Test
+    fun `disabled pill reminder yields no pill slots even when a slot is due`() {
+        val morningMed = med(1, setOf(TimeOfDay.MORNING))
+        val decision = ReminderEvaluator.evaluate(
+            daysUntilNextPeriod = null,
+            glasses = 8,
+            goal = 8,
+            now = LocalTime.of(10, 0), // past MORNING, untaken
+            activeMeds = listOf(morningMed),
+            takenByMed = emptyMap(),
+            remindPills = false,
+        )
+        assertThat(decision.pillSlots).isEmpty()
+    }
 }

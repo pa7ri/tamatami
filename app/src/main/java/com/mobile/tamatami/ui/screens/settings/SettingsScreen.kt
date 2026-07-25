@@ -200,6 +200,27 @@ fun SettingsScreen(
                 }
             }
 
+            // -- Reminders ---------------------------------------------------
+            item {
+                SettingsSectionCard(title = "Reminders") {
+                    SwitchRow(
+                        label = "Period reminders",
+                        checked = state.remindPeriodEnabled,
+                        onChange = viewModel::setRemindPeriod,
+                    )
+                    SwitchRow(
+                        label = "Water reminders",
+                        checked = state.remindWaterEnabled,
+                        onChange = viewModel::setRemindWater,
+                    )
+                    SwitchRow(
+                        label = "Medication reminders",
+                        checked = state.remindPillsEnabled,
+                        onChange = viewModel::setRemindPills,
+                    )
+                }
+            }
+
             // -- Data (backup / restore) -------------------------------------
             item {
                 DataBackupSection(

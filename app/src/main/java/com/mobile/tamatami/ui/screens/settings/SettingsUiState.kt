@@ -21,6 +21,10 @@ data class SettingsUiState(
     val dailyStepsGoal: Int = 8_000,
     val sleepGoalHours: Int = 8,
     val waterGoalGlasses: Int = 8,
+    // Per-type reminder toggles. Defaults mirror UserProfileEntity.
+    val remindPeriodEnabled: Boolean = true,
+    val remindWaterEnabled: Boolean = false,
+    val remindPillsEnabled: Boolean = true,
 ) {
     companion object {
         val Empty = SettingsUiState()
