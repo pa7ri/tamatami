@@ -7,6 +7,7 @@ import com.mobile.tamatami.R
 import com.mobile.tamatami.TamatamiApp
 import com.mobile.tamatami.di.AppContainer
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalTime
 import java.time.ZoneId
 
 /**
@@ -33,7 +34,10 @@ class ReminderWorker(
 
     private suspend fun evaluateAndNotify(container: AppContainer) {
         val today = container.clock.today()
-        val now = container.clock.now().atZone(ZoneId.systemDefault()).toLocalTime()
+        // System clock gives a java.time.LocalTime; convert to the shared domain's
+        // kotlinx-datetime type at this Android boundary (ReminderLogic is now KMP).
+        val nowJava = container.clock.now().atZone(ZoneId.systemDefault()).toLocalTime()
+        val now = LocalTime(nowJava.hour, nowJava.minute, nowJava.second)
 
         val cycle = container.cycleRepository.observeTodayCycle(today).first()
         val daily = container.dailyLogRepository.observeToday(today).first()

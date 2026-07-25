@@ -51,6 +51,8 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":shared"))
+
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -73,6 +75,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

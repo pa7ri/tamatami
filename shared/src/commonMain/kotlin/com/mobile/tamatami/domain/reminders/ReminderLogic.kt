@@ -1,7 +1,7 @@
 package com.mobile.tamatami.domain.reminders
 
 import com.mobile.tamatami.domain.medication.TimeOfDay
-import java.time.LocalTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Pure decision logic for the three reminder types. The WorkManager workers are
@@ -11,8 +11,11 @@ import java.time.LocalTime
 object ReminderLogic {
 
     /** Reminders only fire during these waking hours (inclusive start, exclusive end). */
-    val WAKING_START: LocalTime = LocalTime.of(9, 0)
-    val WAKING_END: LocalTime = LocalTime.of(21, 0)
+    val WAKING_START: LocalTime = LocalTime(9, 0)
+    val WAKING_END: LocalTime = LocalTime(21, 0)
+
+    /** Minutes since midnight — kotlinx-datetime's LocalTime has no duration math. */
+    private fun LocalTime.minuteOfDay(): Int = hour * 60 + minute
 
     /**
      * Period-due reminder: fire when the next expected period is exactly one day
@@ -33,11 +36,10 @@ object ReminderLogic {
     fun isWaterBehindPace(glassesSoFar: Int, goalGlasses: Int, now: LocalTime): Boolean {
         if (goalGlasses <= 0) return false
         if (glassesSoFar >= goalGlasses) return false
-        if (now.isBefore(WAKING_START) || !now.isBefore(WAKING_END)) return false
+        if (now < WAKING_START || now >= WAKING_END) return false
 
-        val windowMinutes = WAKING_START.until(WAKING_END, java.time.temporal.ChronoUnit.MINUTES)
-            .toDouble()
-        val elapsedMinutes = WAKING_START.until(now, java.time.temporal.ChronoUnit.MINUTES)
+        val windowMinutes = (WAKING_END.minuteOfDay() - WAKING_START.minuteOfDay()).toDouble()
+        val elapsedMinutes = (now.minuteOfDay() - WAKING_START.minuteOfDay())
             .coerceAtLeast(0).toDouble()
         val expectedByNow = goalGlasses * (elapsedMinutes / windowMinutes)
         return glassesSoFar < expectedByNow
@@ -51,6 +53,6 @@ object ReminderLogic {
      */
     fun currentPillSlot(now: LocalTime): TimeOfDay? =
         TimeOfDay.entries
-            .filter { !now.isBefore(it.defaultTime) }
+            .filter { now >= it.defaultTime }
             .maxByOrNull { it.defaultTime }
 }

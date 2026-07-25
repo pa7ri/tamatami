@@ -1,0 +1,34 @@
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
+}
+
+kotlin {
+    // Android library target (AGP 9's built-in KMP plugin). Consumed by :app as
+    // a regular library dependency. Uses the new androidLibrary { } DSL rather
+    // than a separate android { } block.
+    androidLibrary {
+        namespace = "com.mobile.tamatami.shared"
+        compileSdk = 36
+        minSdk = 31
+    }
+
+    // JVM target lets us compile + run the shared code (and its tests) here,
+    // without Xcode. This is what validates the shared core in this environment.
+    jvm()
+
+    // iOS targets. Building/linking a runnable framework requires Xcode's Apple
+    // SDKs, but Kotlin/Native compiles the shared code for these targets here
+    // (konan toolchain) — so the shared core is validated for iOS too.
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+    }
+}

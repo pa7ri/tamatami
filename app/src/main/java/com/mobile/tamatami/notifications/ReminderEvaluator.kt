@@ -4,7 +4,7 @@ import com.mobile.tamatami.data.db.entity.MedicationEntity
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
 import com.mobile.tamatami.domain.reminders.ReminderLogic
-import java.time.LocalTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Pure orchestration for the reminder worker: given the day's already-read
