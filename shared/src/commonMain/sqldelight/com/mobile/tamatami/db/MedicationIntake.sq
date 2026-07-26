@@ -1,0 +1,38 @@
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.medication.TimeOfDay;
+
+CREATE TABLE medicationIntake (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    medicationId INTEGER AS Long NOT NULL,
+    date INTEGER AS LocalDate NOT NULL,
+    slot TEXT AS TimeOfDay NOT NULL
+);
+
+CREATE UNIQUE INDEX medicationIntake_med_date_slot ON medicationIntake(medicationId, date, slot);
+
+observeByDate:
+SELECT * FROM medicationIntake WHERE date = ?;
+
+getByDate:
+SELECT * FROM medicationIntake WHERE date = ?;
+
+insert:
+INSERT OR IGNORE INTO medicationIntake(medicationId, date, slot)
+VALUES (?, ?, ?);
+
+delete:
+DELETE FROM medicationIntake WHERE medicationId = ? AND date = ? AND slot = ?;
+
+deleteForMedication:
+DELETE FROM medicationIntake WHERE medicationId = ?;
+
+getAll:
+SELECT * FROM medicationIntake;
+
+insertAllRow:
+INSERT OR REPLACE INTO medicationIntake(id, medicationId, date, slot)
+VALUES (?, ?, ?, ?);
+
+clear:
+DELETE FROM medicationIntake;

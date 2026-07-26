@@ -1,0 +1,34 @@
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.nutrition.CravingHint;
+
+CREATE TABLE cravingLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    craving TEXT AS CravingHint NOT NULL
+);
+
+CREATE UNIQUE INDEX cravingLog_date ON cravingLog(date);
+
+observeByDate:
+SELECT * FROM cravingLog WHERE date = ? LIMIT 1;
+
+observeRecent:
+SELECT * FROM cravingLog ORDER BY date DESC LIMIT ?;
+
+insert:
+INSERT OR REPLACE INTO cravingLog(date, craving)
+VALUES (?, ?);
+
+upsert:
+INSERT OR REPLACE INTO cravingLog(id, date, craving)
+VALUES (?, ?, ?);
+
+deleteByDate:
+DELETE FROM cravingLog WHERE date = ?;
+
+getAll:
+SELECT * FROM cravingLog;
+
+clear:
+DELETE FROM cravingLog;

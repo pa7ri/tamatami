@@ -1,0 +1,39 @@
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.training.WorkoutType;
+import com.mobile.tamatami.domain.training.WorkoutIntensity;
+
+CREATE TABLE workoutLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    type TEXT AS WorkoutType NOT NULL,
+    durationMinutes INTEGER AS Int NOT NULL,
+    intensity TEXT AS WorkoutIntensity NOT NULL,
+    notes TEXT
+);
+
+CREATE INDEX workoutLog_date ON workoutLog(date);
+
+observeRecent:
+SELECT * FROM workoutLog ORDER BY date DESC, id DESC LIMIT ?;
+
+observeByDate:
+SELECT * FROM workoutLog WHERE date = ? ORDER BY id DESC;
+
+insert:
+INSERT OR REPLACE INTO workoutLog(date, type, durationMinutes, intensity, notes)
+VALUES (?, ?, ?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO workoutLog(id, date, type, durationMinutes, intensity, notes)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM workoutLog WHERE id = ?;
+
+getAll:
+SELECT * FROM workoutLog;
+
+clear:
+DELETE FROM workoutLog;

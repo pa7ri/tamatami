@@ -1,0 +1,31 @@
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.model.Mood;
+
+CREATE TABLE moodLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    mood TEXT AS Mood NOT NULL,
+    energy INTEGER AS Int NOT NULL,
+    notes TEXT
+);
+
+CREATE UNIQUE INDEX moodLog_date ON moodLog(date);
+
+observeByDate:
+SELECT * FROM moodLog WHERE date = ? LIMIT 1;
+
+insert:
+INSERT OR REPLACE INTO moodLog(date, mood, energy, notes)
+VALUES (?, ?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO moodLog(id, date, mood, energy, notes)
+VALUES (?, ?, ?, ?, ?);
+
+getAll:
+SELECT * FROM moodLog;
+
+clear:
+DELETE FROM moodLog;

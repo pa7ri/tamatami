@@ -1,0 +1,29 @@
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE waterLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    glasses INTEGER AS Int NOT NULL,
+    goal INTEGER AS Int NOT NULL DEFAULT 8
+);
+
+CREATE UNIQUE INDEX waterLog_date ON waterLog(date);
+
+observeByDate:
+SELECT * FROM waterLog WHERE date = ? LIMIT 1;
+
+insert:
+INSERT OR REPLACE INTO waterLog(date, glasses, goal)
+VALUES (?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO waterLog(id, date, glasses, goal)
+VALUES (?, ?, ?, ?);
+
+getAll:
+SELECT * FROM waterLog;
+
+clear:
+DELETE FROM waterLog;

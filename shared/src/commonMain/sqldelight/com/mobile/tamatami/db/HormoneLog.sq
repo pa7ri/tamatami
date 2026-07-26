@@ -1,0 +1,42 @@
+import kotlin.Float;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE hormoneLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    hormone TEXT NOT NULL,
+    value REAL AS Float NOT NULL,
+    unit TEXT NOT NULL,
+    notes TEXT
+);
+
+CREATE INDEX hormoneLog_date ON hormoneLog(date);
+
+CREATE INDEX hormoneLog_hormone ON hormoneLog(hormone);
+
+observeByDate:
+SELECT * FROM hormoneLog WHERE date = ? ORDER BY id;
+
+observeRecent:
+SELECT * FROM hormoneLog WHERE date >= ? ORDER BY date DESC, id DESC;
+
+observeByMarker:
+SELECT * FROM hormoneLog WHERE hormone = ? AND date >= ? ORDER BY date ASC;
+
+insert:
+INSERT OR REPLACE INTO hormoneLog(date, hormone, value, unit, notes)
+VALUES (?, ?, ?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO hormoneLog(id, date, hormone, value, unit, notes)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM hormoneLog WHERE id = ?;
+
+getAll:
+SELECT * FROM hormoneLog;
+
+clear:
+DELETE FROM hormoneLog;
