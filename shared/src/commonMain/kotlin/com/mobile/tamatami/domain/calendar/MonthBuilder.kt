@@ -1,15 +1,17 @@
 package com.mobile.tamatami.domain.calendar
 
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
 import com.mobile.tamatami.domain.cycle.CycleHistory
 import com.mobile.tamatami.domain.cycle.CyclePhaseCalculator
 import com.mobile.tamatami.domain.cycle.PeriodPredictor
 import com.mobile.tamatami.domain.model.CyclePhase
+import com.mobile.tamatami.domain.model.CycleProfile
+import com.mobile.tamatami.domain.model.PeriodDay
 import com.mobile.tamatami.domain.model.PeriodFlow
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
 data class CalendarDay(
     val date: LocalDate,
@@ -24,8 +26,12 @@ data class CalendarDay(
 
 /**
  * Pure builder for a 6×7 calendar grid. The returned list always has 42
- * entries — leading and trailing days outside [displayedMonth] keep
+ * entries — leading and trailing days outside the displayed month keep
  * `inMonth = false` so the grid never reflows.
+ *
+ * The month is passed as [year] + [monthNumber] (1-12) rather than a
+ * `java.time.YearMonth`, which doesn't exist in kotlinx-datetime; callers on
+ * the JVM convert at the boundary.
  *
  * The predicted-period and predicted-ovulation rings are driven by
  * [PeriodPredictor.predictAdaptive] — once the user has logged a couple of
@@ -35,15 +41,16 @@ data class CalendarDay(
 object MonthBuilder {
 
     fun build(
-        displayedMonth: YearMonth,
-        profile: UserProfileEntity?,
-        loggedPeriodDays: List<PeriodDayEntity>,
+        year: Int,
+        monthNumber: Int,
+        profile: CycleProfile?,
+        loggedPeriodDays: List<PeriodDay>,
         today: LocalDate,
     ): List<CalendarDay> {
-        val first = displayedMonth.atDay(1)
-        // Sunday-start grid: shift so that DayOfWeek SUNDAY (7) maps to 0.
-        val leading = (first.dayOfWeek.value % 7)
-        val gridStart = first.minusDays(leading.toLong())
+        val first = LocalDate(year, monthNumber, 1)
+        // Sunday-start grid: shift so that Sunday (ISO 7) maps to 0.
+        val leading = first.dayOfWeek.isoDayNumber % 7
+        val gridStart = first.minus(leading, DateTimeUnit.DAY)
 
         val loggedByDate = loggedPeriodDays.associateBy { it.date }
 
@@ -58,11 +65,11 @@ object MonthBuilder {
                 fallback = it.avgCycleLengthDays,
             )
         } ?: 28
-        val predictedOvulation: LocalDate? = predicted?.minusDays(adaptiveCycleLen / 2L)
+        val predictedOvulation: LocalDate? = predicted?.minus(adaptiveCycleLen / 2, DateTimeUnit.DAY)
 
         return List(42) { index ->
-            val date = gridStart.plusDays(index.toLong())
-            val inMonth = YearMonth.from(date) == displayedMonth
+            val date = gridStart.plus(index, DateTimeUnit.DAY)
+            val inMonth = date.year == year && date.monthNumber == monthNumber
             val phase = if (profile != null) {
                 CyclePhaseCalculator.calculateAdaptive(
                     profile = profile,
@@ -88,8 +95,5 @@ object MonthBuilder {
 
     /** Offset (in days) of the first Sunday on or before [first]. */
     @Suppress("unused") // referenced by tests
-    fun leadingBlanks(first: LocalDate): Int = first.dayOfWeek.value % 7
-
-    @Suppress("unused")
-    private val _orderHint = DayOfWeek.SUNDAY // keep import explicit
+    fun leadingBlanks(first: LocalDate): Int = first.dayOfWeek.isoDayNumber % 7
 }

@@ -2,17 +2,21 @@ package com.mobile.tamatami.data.repository
 
 import com.mobile.tamatami.data.db.dao.WorkoutLogDao
 import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.domain.training.WorkoutType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 class WorkoutRepository(
     private val dao: WorkoutLogDao,
 ) {
-    fun observeRecent(limit: Int = 30): Flow<List<WorkoutLogEntity>> = dao.observeRecent(limit)
+    fun observeRecent(limit: Int = 30): Flow<List<Workout>> =
+        dao.observeRecent(limit).map { rows -> rows.map { it.toWorkout() } }
 
-    fun observeByDate(date: LocalDate): Flow<List<WorkoutLogEntity>> = dao.observeByDate(date)
+    fun observeByDate(date: LocalDate): Flow<List<Workout>> =
+        dao.observeByDate(date).map { rows -> rows.map { it.toWorkout() } }
 
     suspend fun logWorkout(
         date: LocalDate,

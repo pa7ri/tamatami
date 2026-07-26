@@ -29,15 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
 import com.mobile.tamatami.domain.calendar.CalendarDay
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.ui.screens.home.displayName
+import kotlinx.datetime.toJavaLocalDate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -72,7 +73,7 @@ fun DayStatusCard(
 
             // ----- Header --------------------------------------------------
             Text(
-                text = day.date.format(dateFmt),
+                text = day.date.toJavaLocalDate().format(dateFmt),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -93,7 +94,7 @@ fun DayStatusCard(
                 PeriodFlow.entries.forEach { flow ->
                     FilterChip(
                         selected = flow == (snapshot.periodFlow ?: PeriodFlow.NONE),
-                        onClick = { onFlow(day.date, flow) },
+                        onClick = { onFlow(day.date.toJavaLocalDate(), flow) },
                         label = { Text(flow.label()) },
                     )
                 }
@@ -105,7 +106,7 @@ fun DayStatusCard(
                 Mood.entries.forEach { mood ->
                     FilterChip(
                         selected = mood == snapshot.mood,
-                        onClick = { onMood(day.date, mood) },
+                        onClick = { onMood(day.date.toJavaLocalDate(), mood) },
                         label = { Text(mood.label()) },
                     )
                 }
@@ -119,7 +120,7 @@ fun DayStatusCard(
                 )
                 Slider(
                     value = (snapshot.energy ?: 3).toFloat(),
-                    onValueChange = { onEnergy(day.date, it.toInt().coerceIn(1, 5)) },
+                    onValueChange = { onEnergy(day.date.toJavaLocalDate(), it.toInt().coerceIn(1, 5)) },
                     valueRange = 1f..5f,
                     steps = 3,
                 )
@@ -131,7 +132,7 @@ fun DayStatusCard(
                 Symptom.entries.forEach { s ->
                     FilterChip(
                         selected = s in snapshot.symptoms,
-                        onClick = { onToggleSymptom(day.date, s) },
+                        onClick = { onToggleSymptom(day.date.toJavaLocalDate(), s) },
                         label = { Text(s.label) },
                     )
                 }
@@ -142,7 +143,7 @@ fun DayStatusCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FilledIconButton(
                     onClick = {
-                        onWater(day.date, (snapshot.waterGlasses - 1).coerceAtLeast(0))
+                        onWater(day.date.toJavaLocalDate(), (snapshot.waterGlasses - 1).coerceAtLeast(0))
                     },
                 ) { Icon(Icons.Outlined.Remove, contentDescription = "Remove a glass") }
                 Spacer(Modifier.width(16.dp))
@@ -152,7 +153,7 @@ fun DayStatusCard(
                 )
                 Spacer(Modifier.width(16.dp))
                 FilledIconButton(
-                    onClick = { onWater(day.date, snapshot.waterGlasses + 1) },
+                    onClick = { onWater(day.date.toJavaLocalDate(), snapshot.waterGlasses + 1) },
                 ) { Icon(Icons.Outlined.Add, contentDescription = "Add a glass") }
             }
 
@@ -164,7 +165,7 @@ fun DayStatusCard(
                         selected = c == snapshot.craving,
                         onClick = {
                             // Re-tap clears.
-                            onCraving(day.date, if (c == snapshot.craving) null else c)
+                            onCraving(day.date.toJavaLocalDate(), if (c == snapshot.craving) null else c)
                         },
                         label = { Text(c.label) },
                     )
@@ -203,7 +204,7 @@ private fun Section(label: String) {
 }
 
 @Composable
-private fun WorkoutRow(w: WorkoutLogEntity) {
+private fun WorkoutRow(w: Workout) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),

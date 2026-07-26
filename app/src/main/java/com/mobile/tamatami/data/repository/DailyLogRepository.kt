@@ -19,6 +19,7 @@ import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.SleepSummary
 import com.mobile.tamatami.domain.model.Symptom
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.domain.sleep.SleepQualityEstimator
 import com.mobile.tamatami.domain.sleep.SleepRating
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 
 class DailyLogRepository(
@@ -56,7 +58,7 @@ class DailyLogRepository(
         cravingDao.observeByDate(date),
     ) { water, mood, flow, symptoms, craving ->
         DailySnapshot(
-            date = date,
+            date = date.toKotlinLocalDate(),
             waterGlasses = water?.glasses ?: 0,
             waterGoal = water?.goal ?: 8,
             mood = mood?.mood,
@@ -69,7 +71,7 @@ class DailyLogRepository(
             sleep = null,
         )
     }.combine(workoutDao.observeByDate(date)) { snapshot, workouts ->
-        snapshot.copy(workouts = workouts)
+        snapshot.copy(workouts = workouts.map { it.toWorkout() })
     }.combine(sleepDao.observeByDate(date)) { snapshot, sleep ->
         snapshot.copy(sleep = sleep?.toSummary())
     }
@@ -222,4 +224,14 @@ private fun SleepLogEntity.toSummary(): SleepSummary = SleepSummary(
     durationMinutes = durationMinutes,
     rating = rating,
     quality = SleepQualityEstimator.estimate(durationMinutes, rating),
+)
+
+/** Map the Room workout row to the shared [Workout] domain model. */
+internal fun WorkoutLogEntity.toWorkout(): Workout = Workout(
+    id = id,
+    date = date.toKotlinLocalDate(),
+    type = type,
+    durationMinutes = durationMinutes,
+    intensity = intensity,
+    notes = notes,
 )

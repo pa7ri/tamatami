@@ -7,10 +7,13 @@ import com.mobile.tamatami.data.db.entity.CycleEntryEntity
 import com.mobile.tamatami.data.db.entity.PeriodDayEntity
 import com.mobile.tamatami.domain.cycle.CyclePhaseCalculator
 import com.mobile.tamatami.domain.model.CyclePhase
+import com.mobile.tamatami.domain.model.CycleProfile
 import com.mobile.tamatami.domain.model.CycleSnapshot
+import com.mobile.tamatami.domain.model.PeriodDay
 import com.mobile.tamatami.domain.model.PeriodFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 
 class CycleRepository(
@@ -37,9 +40,15 @@ class CycleRepository(
                 )
             } else {
                 CyclePhaseCalculator.calculateAdaptive(
-                    profile = profile,
-                    loggedPeriodDays = periodDays,
-                    today = today,
+                    profile = CycleProfile(
+                        lastPeriodStart = profile.lastPeriodStart.toKotlinLocalDate(),
+                        avgCycleLengthDays = profile.avgCycleLengthDays,
+                        avgPeriodLengthDays = profile.avgPeriodLengthDays,
+                    ),
+                    loggedPeriodDays = periodDays.map {
+                        PeriodDay(it.date.toKotlinLocalDate(), it.flow)
+                    },
+                    today = today.toKotlinLocalDate(),
                 )
             }
         }

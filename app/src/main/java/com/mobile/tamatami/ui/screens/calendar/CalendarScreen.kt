@@ -48,6 +48,7 @@ import com.mobile.tamatami.ui.theme.PhaseFollicular
 import com.mobile.tamatami.ui.theme.PhaseLuteal
 import com.mobile.tamatami.ui.theme.PhaseMenstrual
 import com.mobile.tamatami.ui.theme.PhaseOvulatory
+import kotlinx.datetime.toJavaLocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
             )
             MonthGrid(
                 days = state.days,
-                onDayClick = { viewModel.selectDate(it.date) },
+                onDayClick = { viewModel.selectDate(it.date.toJavaLocalDate()) },
             )
             Spacer(Modifier.height(16.dp))
             if (displayedDay != null && state.selectedDaySnapshot != null) {
@@ -130,7 +131,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
     // sheet as the Training screen; the date is what makes it per-day.
     if (logSheetOpen && displayedDay != null) {
         LogWorkoutSheet(
-            date = displayedDay.date,
+            date = displayedDay.date.toJavaLocalDate(),
             onDismiss = { logSheetOpen = false },
             onSave = { date, type, mins, intensity, notes ->
                 viewModel.logWorkout(date, type, mins, intensity, notes)

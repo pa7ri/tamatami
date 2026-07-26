@@ -1,10 +1,9 @@
 package com.mobile.tamatami.domain.model
 
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
 import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.domain.sleep.SleepQuality
 import com.mobile.tamatami.domain.sleep.SleepRating
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 /** Last night's sleep as shown on a day — duration, self-rating, and the estimated quality. */
 data class SleepSummary(
@@ -26,7 +25,7 @@ data class DailySnapshot(
     val periodFlow: PeriodFlow?,
     val symptoms: Set<Symptom>,
     val craving: CravingHint?,
-    val workouts: List<WorkoutLogEntity>,
+    val workouts: List<Workout>,
     val sleep: SleepSummary?,
 ) {
     companion object {

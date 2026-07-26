@@ -1,11 +1,11 @@
 package com.mobile.tamatami.domain.cycle
 
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
 import com.mobile.tamatami.domain.model.CyclePhase
+import com.mobile.tamatami.domain.model.CycleProfile
 import com.mobile.tamatami.domain.model.CycleSnapshot
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import com.mobile.tamatami.domain.model.PeriodDay
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 
 /**
  * Pure phase calculator. Given the user's last period start, their average
@@ -54,8 +54,8 @@ object CyclePhaseCalculator {
      * `cycleLength` on the snapshot reflects the *adaptive* length.
      */
     fun calculateAdaptive(
-        profile: UserProfileEntity,
-        loggedPeriodDays: List<PeriodDayEntity>,
+        profile: CycleProfile,
+        loggedPeriodDays: List<PeriodDay>,
         today: LocalDate,
     ): CycleSnapshot {
         val adaptive = PeriodPredictor.predictAdaptive(profile, loggedPeriodDays, today)
@@ -84,18 +84,18 @@ object CyclePhaseCalculator {
         val cycleLen = avgCycleLength.coerceIn(MIN_CYCLE, MAX_CYCLE)
         val periodLen = avgPeriodLength.coerceIn(MIN_PERIOD, MAX_PERIOD)
 
-        if (today.isBefore(lastPeriodStart)) {
+        if (today < lastPeriodStart) {
             return CycleSnapshot(
                 phase = CyclePhase.UNKNOWN,
                 cycleDay = 0,
                 dayInPhase = 0,
                 predictedNextPeriod = lastPeriodStart,
-                daysUntilNextPeriod = ChronoUnit.DAYS.between(today, lastPeriodStart).toInt(),
+                daysUntilNextPeriod = today.daysUntil(lastPeriodStart),
                 cycleLength = cycleLen,
             )
         }
 
-        val daysSinceStart = ChronoUnit.DAYS.between(lastPeriodStart, today).toInt()
+        val daysSinceStart = lastPeriodStart.daysUntil(today)
         // 1-indexed day inside the current cycle.
         val cycleDay = (daysSinceStart % cycleLen) + 1
 

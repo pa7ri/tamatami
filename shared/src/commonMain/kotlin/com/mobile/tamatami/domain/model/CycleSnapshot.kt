@@ -1,6 +1,6 @@
 package com.mobile.tamatami.domain.model
 
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 /** Pure snapshot describing where the user sits in their cycle today. */
 data class CycleSnapshot(

@@ -1,9 +1,11 @@
 package com.mobile.tamatami.domain.cycle
 
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import com.mobile.tamatami.domain.model.CycleProfile
+import com.mobile.tamatami.domain.model.PeriodDay
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.plus
 
 data class Prediction(
     val nextDate: LocalDate,
@@ -28,12 +30,12 @@ object PeriodPredictor {
         avgCycleLength: Int,
         today: LocalDate,
     ): Prediction {
-        val cycleLen = avgCycleLength.coerceAtLeast(1).toLong()
-        var next = lastPeriodStart.plusDays(cycleLen)
-        while (next.isBefore(today)) {
-            next = next.plusDays(cycleLen)
+        val cycleLen = avgCycleLength.coerceAtLeast(1)
+        var next = lastPeriodStart.plus(cycleLen, DateTimeUnit.DAY)
+        while (next < today) {
+            next = next.plus(cycleLen, DateTimeUnit.DAY)
         }
-        val daysUntil = ChronoUnit.DAYS.between(today, next).toInt()
+        val daysUntil = today.daysUntil(next)
         return Prediction(next, daysUntil)
     }
 
@@ -44,8 +46,8 @@ object PeriodPredictor {
      * tracks reality once the user has logged a couple of cycles.
      */
     fun predictAdaptive(
-        profile: UserProfileEntity,
-        loggedPeriodDays: List<PeriodDayEntity>,
+        profile: CycleProfile,
+        loggedPeriodDays: List<PeriodDay>,
         today: LocalDate,
     ): Prediction {
         val starts = CycleHistory.detectStarts(loggedPeriodDays)

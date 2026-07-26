@@ -8,7 +8,9 @@ import com.mobile.tamatami.data.repository.CycleRepository
 import com.mobile.tamatami.data.repository.DailyLogRepository
 import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.domain.calendar.MonthBuilder
+import com.mobile.tamatami.domain.model.CycleProfile
 import com.mobile.tamatami.domain.model.Mood
+import com.mobile.tamatami.domain.model.PeriodDay
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.nutrition.CravingHint
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -57,7 +60,21 @@ class CalendarViewModel(
     ) { profile, periodDays, cycle, month, selected ->
         CalendarUiState(
             displayedMonth = month,
-            days = MonthBuilder.build(month, profile, periodDays, today),
+            days = MonthBuilder.build(
+                year = month.year,
+                monthNumber = month.monthValue,
+                profile = profile?.let {
+                    CycleProfile(
+                        lastPeriodStart = it.lastPeriodStart.toKotlinLocalDate(),
+                        avgCycleLengthDays = it.avgCycleLengthDays,
+                        avgPeriodLengthDays = it.avgPeriodLengthDays,
+                    )
+                },
+                loggedPeriodDays = periodDays.map {
+                    PeriodDay(it.date.toKotlinLocalDate(), it.flow)
+                },
+                today = today.toKotlinLocalDate(),
+            ),
             selectedDate = selected,
             cycle = cycle,
             selectedDaySnapshot = null, // filled in by the next combine

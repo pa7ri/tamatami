@@ -4,6 +4,7 @@ import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.TamagotchiState
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 
 data class HomeUiState(
@@ -25,7 +26,7 @@ data class HomeUiState(
                 daysUntilNextPeriod = null,
                 cycleLength = 28,
             ),
-            daily = DailySnapshot.empty(LocalDate.now()),
+            daily = DailySnapshot.empty(LocalDate.now().toKotlinLocalDate()),
             tama = TamagotchiState.Idle,
             waterGoal = 8,
         )

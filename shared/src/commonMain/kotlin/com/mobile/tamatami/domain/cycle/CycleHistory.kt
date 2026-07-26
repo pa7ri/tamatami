@@ -1,8 +1,9 @@
 package com.mobile.tamatami.domain.cycle
 
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import com.mobile.tamatami.domain.model.PeriodDay
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
+import kotlin.math.round
 
 /**
  * Derives cycle history from logged period days.
@@ -23,7 +24,7 @@ object CycleHistory {
      * function is order-independent.
      */
     fun detectStarts(
-        loggedPeriodDays: List<PeriodDayEntity>,
+        loggedPeriodDays: List<PeriodDay>,
         gapDays: Int = 5,
     ): List<LocalDate> {
         if (loggedPeriodDays.isEmpty()) return emptyList()
@@ -31,7 +32,7 @@ object CycleHistory {
         val starts = ArrayList<LocalDate>(dates.size)
         var prev: LocalDate? = null
         for (d in dates) {
-            if (prev == null || ChronoUnit.DAYS.between(prev, d) > gapDays) {
+            if (prev == null || prev.daysUntil(d) > gapDays) {
                 starts += d
             }
             prev = d
@@ -52,8 +53,8 @@ object CycleHistory {
     ): Int {
         if (starts.size < 2) return fallback
         val sorted = starts.sorted()
-        val deltas = sorted.zipWithNext { a, b -> ChronoUnit.DAYS.between(a, b).toInt() }
+        val deltas = sorted.zipWithNext { a, b -> a.daysUntil(b) }
         val recent = deltas.takeLast(window)
-        return recent.average().let { Math.round(it).toInt() }
+        return round(recent.average()).toInt()
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mobile.tamatami.ui.screens.home.HomeUiState
+import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -28,10 +29,10 @@ fun NextPeriodSection(state: HomeUiState) {
             Spacer(Modifier.height(4.dp))
             Text(
                 text = when {
-                    days == null -> predicted.format(formatter)
+                    days == null -> predicted.toJavaLocalDate().format(formatter)
                     days <= 0 -> "Likely today"
-                    days == 1 -> "In 1 day · ${predicted.format(formatter)}"
-                    else -> "In $days days · ${predicted.format(formatter)}"
+                    days == 1 -> "In 1 day · ${predicted.toJavaLocalDate().format(formatter)}"
+                    else -> "In $days days · ${predicted.toJavaLocalDate().format(formatter)}"
                 },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
