@@ -59,6 +59,7 @@ them.
    - `HomeScreen.swift`, `CalendarScreen.swift`, `TrainingScreen.swift`,
      `CycleInfoScreen.swift`, `MedicationScreen.swift`,
      `HormonesScreen.swift`, `SettingsScreen.swift`
+   - `AddMedicationSheet.swift`, `LogWorkoutSheet.swift`, `AddHormoneSheet.swift`
    - `FlowWatcher.swift`, `NotificationScheduler.swift`
    Uncheck "Copy items if needed" (they're already in place).
 5. Set **minimum deployment** to iOS 16 (the Swift uses `NavigationStack` /
@@ -164,19 +165,20 @@ SQLDelight, the `TamatamiSdk` facade (repos + `today()/now()/localDate()`,
 - **Onboarding flow** → `completeOnboarding`; the root view gates on
   `observeOnboardingComplete()` and switches to the tabs automatically.
 - Screens wired to shared repos: **Home** (cycle snapshot), **Calendar**
-  (today's log + log water/flow), **Training** (shared recommendation + recent
-  workouts + log), **Cycle info** (pure `guideFor` per phase), **Medication**
-  (observe/add/toggle), **Hormones** (recent + add), **Settings**
-  (load/edit/`updateSettings`).
+  (full 6×7 month grid via the shared `MonthBuilder`, phase-colored cells with
+  today/period/predicted markers, month nav, tap-a-day detail that logs
+  water/flow), **Training** (shared recommendation + recent workouts + **log
+  sheet**), **Cycle info** (pure `guideFor` per phase), **Medication**
+  (observe/toggle + **add sheet** with name & slot multi-select), **Hormones**
+  (recent + **add-reading sheet**), **Settings** (load/edit/`updateSettings`).
+- Real input sheets: `AddMedicationSheet`, `LogWorkoutSheet`, `AddHormoneSheet`.
 - Notification permission + shared-logic-driven scheduler.
 
-**Not yet built:** the full month-grid calendar (data is available via
-`cycle.observeRecentPeriodDays()` + the shared `MonthBuilder`; the scaffold shows
-a compact day view instead); the Tamagotchi avatar/animations; add/edit *sheets*
-(screens use one-tap "sample" actions to prove the write path — swap for real
-forms); Nutrition screen (follows `CycleInfoScreen` using `nutritionFor(phase)`);
-a HealthKit step source (Android's `StepDataSource` is Health-Connect-only, no
-shared equivalent); `BGTaskScheduler` registration for background reminders.
+**Not yet built:** the Tamagotchi avatar/animations; Nutrition screen (follows
+`CycleInfoScreen` using `nutritionFor(phase)`); a HealthKit step source
+(Android's `StepDataSource` is Health-Connect-only, no shared equivalent);
+`BGTaskScheduler` registration for background reminders; delete/edit affordances
+on logged rows.
 
 > **First-build reality check:** none of the Swift has been compiled (no Xcode
 > here). Expect to fix a handful of bridged-symbol names on the first build —

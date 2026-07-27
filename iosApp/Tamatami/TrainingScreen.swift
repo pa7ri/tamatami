@@ -7,6 +7,7 @@ import Shared
 struct TrainingScreen: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = TrainingModel()
+    @State private var showLogSheet = false
 
     var body: some View {
         NavigationStack {
@@ -32,12 +33,15 @@ struct TrainingScreen: View {
                     }
                 }
                 Section {
-                    Button("Log a 30-min walk") {
-                        Task { await model.logSample() }
-                    }
+                    Button("Log workout") { showLogSheet = true }
                 }
             }
             .navigationTitle("Training")
+            .sheet(isPresented: $showLogSheet) {
+                LogWorkoutSheet { type, minutes, intensity in
+                    Task { await model.log(type: type, minutes: minutes, intensity: intensity) }
+                }
+            }
             .onAppear { model.start(sdk: app.sdk) }
             .onDisappear { model.stop() }
         }
@@ -92,11 +96,11 @@ final class TrainingModel: ObservableObject {
         recommendation = TrainingRecommender.shared.recommend(phase: lastPhase, energy: lastEnergy)
     }
 
-    func logSample() async {
+    func log(type: WorkoutType, minutes: Int, intensity: WorkoutIntensity) async {
         guard let sdk else { return }
         try? await sdk.daily.logWorkout(
-            date: sdk.today(), type: .walk, durationMinutes: 30,
-            intensity: .low, notes: nil, id: 0
+            date: sdk.today(), type: type, durationMinutes: Int32(minutes),
+            intensity: intensity, notes: nil, id: 0
         )
     }
 

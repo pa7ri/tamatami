@@ -8,6 +8,7 @@ import Shared
 struct MedicationScreen: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = MedicationModel()
+    @State private var showAddSheet = false
 
     var body: some View {
         NavigationStack {
@@ -26,8 +27,13 @@ struct MedicationScreen: View {
             .navigationTitle("Medication")
             .toolbar {
                 Button {
-                    Task { await model.addSample() }
+                    showAddSheet = true
                 } label: { Image(systemName: "plus") }
+            }
+            .sheet(isPresented: $showAddSheet) {
+                AddMedicationSheet { name, slots in
+                    Task { await model.add(name: name, slots: slots) }
+                }
             }
             .onAppear { model.start(sdk: app.sdk) }
             .onDisappear { model.stop() }
@@ -92,12 +98,11 @@ final class MedicationModel: ObservableObject {
         )
     }
 
-    /// Demo add — a real UI would collect name + slots from a sheet.
-    func addSample() async {
+    /// Persist a new medication from the add sheet.
+    func add(name: String, slots: Set<TimeOfDay>) async {
         guard let sdk else { return }
-        let slots: Set<TimeOfDay> = [TimeOfDay.morning, TimeOfDay.evening]
         try? await sdk.medication.addMedication(
-            name: "Vitamin D",
+            name: name,
             dosesPerDay: Int32(slots.count),
             slots: slots,
             now: sdk.now()

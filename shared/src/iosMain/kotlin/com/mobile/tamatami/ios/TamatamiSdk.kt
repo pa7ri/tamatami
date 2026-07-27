@@ -11,8 +11,13 @@ import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.data.repository.WorkoutRepository
 import com.mobile.tamatami.db.TamatamiDb
 import com.mobile.tamatami.db.UserProfile
+import com.mobile.tamatami.domain.calendar.CalendarDay
+import com.mobile.tamatami.domain.calendar.MonthBuilder
+import com.mobile.tamatami.domain.model.CycleProfile
 import com.mobile.tamatami.domain.model.CycleSnapshot
+import com.mobile.tamatami.domain.model.PeriodDay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -59,6 +64,31 @@ class TamatamiSdk {
      */
     fun observeOnboardingComplete(): Flow<Boolean> =
         user.observeProfile().map { it?.onboardingComplete ?: false }
+
+    /**
+     * The 6×7 calendar grid for [year]/[monthNumber] (1-12) as a Flow, rebuilt
+     * whenever the profile or logged period days change. Runs the shared
+     * [MonthBuilder]; the SwiftUI grid just renders the 42 [CalendarDay]s.
+     */
+    fun observeMonth(year: Int, monthNumber: Int): Flow<List<CalendarDay>> =
+        combine(
+            user.observeProfile(),
+            cycle.observeRecentPeriodDays(),
+        ) { profile, periodDays ->
+            MonthBuilder.build(
+                year = year,
+                monthNumber = monthNumber,
+                profile = profile?.let {
+                    CycleProfile(
+                        lastPeriodStart = it.lastPeriodStart,
+                        avgCycleLengthDays = it.avgCycleLengthDays,
+                        avgPeriodLengthDays = it.avgPeriodLengthDays,
+                    )
+                },
+                loggedPeriodDays = periodDays,
+                today = today(),
+            )
+        }
 
     /** One-shot cycle snapshot for [date] — for the notification scheduler,
      *  which needs a single value rather than a Flow subscription. */

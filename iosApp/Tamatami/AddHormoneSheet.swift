@@ -1,0 +1,43 @@
+import SwiftUI
+import Shared
+
+/// Add-hormone-reading form: value + unit for the given marker.
+struct AddHormoneSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let marker: HormoneMarker
+    let onSave: (Float, String) -> Void
+
+    @State private var valueText = ""
+    @State private var unit: String
+
+    init(marker: HormoneMarker, onSave: @escaping (Float, String) -> Void) {
+        self.marker = marker
+        self.onSave = onSave
+        _unit = State(initialValue: marker.defaultUnit)
+    }
+
+    private var parsed: Float? { Float(valueText) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(marker.displayName) {
+                    TextField("Value", text: $valueText)
+                        .keyboardType(.decimalPad)
+                    TextField("Unit", text: $unit)
+                    Text("Reference: \(marker.expectedRange.start, specifier: "%.1f")–\(marker.expectedRange.endInclusive, specifier: "%.1f") \(marker.defaultUnit)")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Add reading")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        if let v = parsed { onSave(v, unit); dismiss() }
+                    }.disabled(parsed == nil)
+                }
+            }
+        }
+    }
+}

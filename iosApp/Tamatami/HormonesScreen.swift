@@ -8,6 +8,7 @@ struct HormonesScreen: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = HormonesModel()
     @State private var marker: HormoneMarker = .estrogen
+    @State private var showAddSheet = false
 
     var body: some View {
         NavigationStack {
@@ -30,12 +31,15 @@ struct HormonesScreen: View {
                     }
                 }
                 Section {
-                    Button("Add sample \(marker.displayName) reading") {
-                        Task { await model.addSample(marker) }
-                    }
+                    Button("Add reading") { showAddSheet = true }
                 }
             }
             .navigationTitle("Hormones")
+            .sheet(isPresented: $showAddSheet) {
+                AddHormoneSheet(marker: marker) { value, unit in
+                    Task { await model.add(marker: marker, value: value, unit: unit) }
+                }
+            }
             .onAppear { model.start(sdk: app.sdk) }
             .onDisappear { model.stop() }
         }
@@ -63,11 +67,11 @@ final class HormonesModel: ObservableObject {
         }
     }
 
-    func addSample(_ marker: HormoneMarker) async {
+    func add(marker: HormoneMarker, value: Float, unit: String) async {
         guard let sdk else { return }
         try? await sdk.hormones.upsert(
             id: 0, date: sdk.today(), marker: marker,
-            value: 12.5, unit: marker.defaultUnit, notes: nil
+            value: value, unit: unit, notes: nil
         )
     }
 
