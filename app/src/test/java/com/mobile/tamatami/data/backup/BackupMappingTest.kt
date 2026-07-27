@@ -1,121 +1,68 @@
 package com.mobile.tamatami.data.backup
 
 import com.google.common.truth.Truth.assertThat
-import com.mobile.tamatami.data.db.entity.CravingLogEntity
-import com.mobile.tamatami.data.db.entity.CycleEntryEntity
-import com.mobile.tamatami.data.db.entity.HormoneLogEntity
-import com.mobile.tamatami.data.db.entity.MedicationEntity
-import com.mobile.tamatami.data.db.entity.MedicationIntakeEntity
-import com.mobile.tamatami.data.db.entity.MoodLogEntity
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import com.mobile.tamatami.data.db.entity.SleepLogEntity
-import com.mobile.tamatami.data.db.entity.SymptomLogEntity
-import com.mobile.tamatami.data.db.entity.TamagotchiStateEntity
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
-import com.mobile.tamatami.data.db.entity.WaterLogEntity
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
-import com.mobile.tamatami.domain.model.Mood
-import com.mobile.tamatami.domain.model.PeriodFlow
-import com.mobile.tamatami.domain.model.Symptom
-import com.mobile.tamatami.domain.model.TamagotchiMood
-import com.mobile.tamatami.domain.nutrition.CravingHint
-import com.mobile.tamatami.domain.medication.TimeOfDay
-import com.mobile.tamatami.domain.sleep.SleepRating
-import com.mobile.tamatami.domain.training.WorkoutIntensity
-import com.mobile.tamatami.domain.training.WorkoutType
-import kotlinx.serialization.json.Json
 import org.junit.Test
-import java.time.Instant
-import java.time.LocalDate
 
 /**
- * Pure-JVM coverage of the backup format: entity↔DTO mapping fidelity, the
- * full JSON serialize/parse round-trip, and [BackupRepository.parse]
- * validation. The DB clear/insert wiring in `restore` needs a real Room
- * instance (device/Robolectric) and is verified manually — everything with
- * actual serialization risk is exercised here.
+ * Pure-JVM coverage of the backup format: the full JSON serialize/parse
+ * round-trip over the primitive DTOs, and [BackupRepository.parse] validation.
+ * The DB clear/insert wiring in `restore` runs against the shared SQLDelight
+ * database (covered by the shared module's DB round-trip test); the DTO wire
+ * format — everything with serialization risk — is exercised here.
+ *
+ * DTOs are built directly (they're plain @Serializable primitives) rather than
+ * mapped from entities, since the data layer no longer exposes Room entities.
  */
 class BackupMappingTest {
 
     private val json = BackupRepository.DEFAULT_JSON
 
     private fun sampleBackup(): TamatamiBackup {
-        val d = LocalDate.of(2026, 7, 19).toEpochDay()
+        val dEpochDay = 20_653L // 2026-07-19 epoch day
         return TamatamiBackup(
             exportedAtEpochMs = 1_700_000_000_000L,
-            userProfile = UserProfileEntity(
+            userProfile = UserProfileDto(
                 id = 0,
                 tamaName = "Momo",
-                lastPeriodStart = LocalDate.of(2026, 7, 1),
+                lastPeriodStartEpochDay = 20_635L,
                 avgCycleLengthDays = 28,
                 avgPeriodLengthDays = 5,
                 tryingToConceive = false,
                 onContraception = true,
                 irregularCycles = false,
                 onboardingComplete = true,
-                createdAt = Instant.ofEpochMilli(1_600_000_000_000L),
-            ).toDto(),
-            tamagotchi = TamagotchiStateEntity(
+                createdAtEpochMs = 1_600_000_000_000L,
+            ),
+            tamagotchi = TamagotchiStateDto(
                 id = 0,
-                lastMood = TamagotchiMood.HAPPY,
+                lastMood = "HAPPY",
                 hatched = true,
                 accessoriesJson = "[\"hat\"]",
-            ).toDto(),
+            ),
             cycleEntries = listOf(
-                CycleEntryEntity(1, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 6), 28).toDto(),
-                CycleEntryEntity(2, LocalDate.of(2026, 6, 3), null, null).toDto(),
+                CycleEntryDto(1, 20_635L, 20_640L, 28),
+                CycleEntryDto(2, 20_607L, null, null),
             ),
-            periodDays = listOf(PeriodDayEntity(1, LocalDate.ofEpochDay(d), PeriodFlow.HEAVY).toDto()),
-            moods = listOf(MoodLogEntity(1, LocalDate.ofEpochDay(d), Mood.GOOD, 4, "ok").toDto()),
-            water = listOf(WaterLogEntity(1, LocalDate.ofEpochDay(d), 6, 8).toDto()),
-            hormones = listOf(
-                HormoneLogEntity(1, LocalDate.ofEpochDay(d), "LH", 12.5f, "mIU/mL", null).toDto(),
-            ),
+            periodDays = listOf(PeriodDayDto(1, dEpochDay, "HEAVY")),
+            moods = listOf(MoodLogDto(1, dEpochDay, "GOOD", 4, "ok")),
+            water = listOf(WaterLogDto(1, dEpochDay, 6, 8)),
+            hormones = listOf(HormoneLogDto(1, dEpochDay, "LH", 12.5f, "mIU/mL", null)),
             workouts = listOf(
-                WorkoutLogEntity(1, LocalDate.ofEpochDay(d), WorkoutType.YOGA, 30, WorkoutIntensity.LOW, "am").toDto(),
-                WorkoutLogEntity(2, LocalDate.ofEpochDay(d), WorkoutType.STRENGTH, 45, WorkoutIntensity.HIGH, null).toDto(),
+                WorkoutLogDto(1, dEpochDay, "YOGA", 30, "LOW", "am"),
+                WorkoutLogDto(2, dEpochDay, "STRENGTH", 45, "HIGH", null),
             ),
-            symptoms = listOf(SymptomLogEntity(LocalDate.ofEpochDay(d), Symptom.entries.first()).toDto()),
-            cravings = listOf(CravingLogEntity(1, LocalDate.ofEpochDay(d), CravingHint.entries.first()).toDto()),
-            sleeps = listOf(
-                SleepLogEntity(1, LocalDate.ofEpochDay(d), 1380, 420, 480, SleepRating.RESTFUL).toDto(),
-            ),
+            symptoms = listOf(SymptomLogDto(dEpochDay, "CRAMPS")),
+            cravings = listOf(CravingLogDto(1, dEpochDay, "SWEET")),
+            sleeps = listOf(SleepLogDto(1, dEpochDay, 1380, 420, 480, "RESTFUL")),
             medications = listOf(
-                MedicationEntity(1, "Iron", 1, 0b001, true, Instant.ofEpochMilli(1_650_000_000_000L)).toDto(),
-                MedicationEntity(2, "Vitamin D", 2, 0b101, false, Instant.ofEpochMilli(1_651_000_000_000L)).toDto(),
+                MedicationDto(1, "Iron", 1, 0b001, true, 1_650_000_000_000L),
+                MedicationDto(2, "Vitamin D", 2, 0b101, false, 1_651_000_000_000L),
             ),
             medicationIntakes = listOf(
-                MedicationIntakeEntity(1, 1, LocalDate.ofEpochDay(d), TimeOfDay.MORNING).toDto(),
-                MedicationIntakeEntity(2, 2, LocalDate.ofEpochDay(d), TimeOfDay.EVENING).toDto(),
+                MedicationIntakeDto(1, 1, dEpochDay, "MORNING"),
+                MedicationIntakeDto(2, 2, dEpochDay, "EVENING"),
             ),
         )
-    }
-
-    @Test
-    fun `entity to dto to entity preserves every field`() {
-        val date = LocalDate.of(2026, 7, 19)
-        val workout = WorkoutLogEntity(7, date, WorkoutType.HIIT, 42, WorkoutIntensity.HIGH, "note")
-        assertThat(workout.toDto().toEntity()).isEqualTo(workout)
-
-        val profile = UserProfileEntity(
-            0, "Tama", date, 30, 6, true, false, true, true, Instant.ofEpochMilli(123456789L),
-        )
-        assertThat(profile.toDto().toEntity()).isEqualTo(profile)
-
-        val cycle = CycleEntryEntity(3, date, null, null)
-        assertThat(cycle.toDto().toEntity()).isEqualTo(cycle)
-
-        val symptom = SymptomLogEntity(date, Symptom.entries.first())
-        assertThat(symptom.toDto().toEntity()).isEqualTo(symptom)
-
-        val sleep = SleepLogEntity(9, date, 1380, 420, 480, SleepRating.OKAY)
-        assertThat(sleep.toDto().toEntity()).isEqualTo(sleep)
-
-        val medication = MedicationEntity(5, "Folate", 3, 0b111, true, Instant.ofEpochMilli(987654321L))
-        assertThat(medication.toDto().toEntity()).isEqualTo(medication)
-
-        val intake = MedicationIntakeEntity(4, 5, date, TimeOfDay.AFTERNOON)
-        assertThat(intake.toDto().toEntity()).isEqualTo(intake)
     }
 
     @Test
@@ -124,9 +71,11 @@ class BackupMappingTest {
         val text = json.encodeToString(TamatamiBackup.serializer(), original)
         val parsed = json.decodeFromString(TamatamiBackup.serializer(), text)
         assertThat(parsed).isEqualTo(original)
-        // And the mapped-back entities match the workouts we put in.
-        assertThat(parsed.workouts.map { it.toEntity().type })
-            .containsExactly(WorkoutType.YOGA, WorkoutType.STRENGTH).inOrder()
+        // Field-level spot check that enum names + order survive.
+        assertThat(parsed.workouts.map { it.type })
+            .containsExactly("YOGA", "STRENGTH").inOrder()
+        assertThat(parsed.userProfile?.tamaName).isEqualTo("Momo")
+        assertThat(parsed.medications.map { it.slotsMask }).containsExactly(0b001, 0b101).inOrder()
     }
 
     @Test

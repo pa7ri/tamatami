@@ -1,0 +1,36 @@
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.model.Symptom;
+
+CREATE TABLE symptomLog (
+    date INTEGER AS LocalDate NOT NULL,
+    symptom TEXT AS Symptom NOT NULL,
+    PRIMARY KEY(date, symptom)
+);
+
+CREATE INDEX symptomLog_date ON symptomLog(date);
+
+observeByDate:
+SELECT * FROM symptomLog WHERE date = ?;
+
+observeRecent:
+SELECT * FROM symptomLog ORDER BY date DESC LIMIT ?;
+
+upsert:
+INSERT OR REPLACE INTO symptomLog(date, symptom)
+VALUES (?, ?);
+
+insert:
+INSERT OR REPLACE INTO symptomLog(date, symptom)
+VALUES (?, ?);
+
+delete:
+DELETE FROM symptomLog WHERE date = ? AND symptom = ?;
+
+deleteAllForDate:
+DELETE FROM symptomLog WHERE date = ?;
+
+getAll:
+SELECT * FROM symptomLog;
+
+clear:
+DELETE FROM symptomLog;

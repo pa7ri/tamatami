@@ -1,0 +1,42 @@
+import kotlin.Boolean;
+import kotlin.Int;
+import kotlinx.datetime.Instant;
+import kotlinx.datetime.LocalDate;
+
+-- Singleton profile row (id is always 0). LocalDate stored as epoch-day INTEGER,
+-- Instant as epoch-milli INTEGER, Booleans as INTEGER 0/1 (SQLDelight default).
+CREATE TABLE userProfile (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    tamaName TEXT NOT NULL,
+    lastPeriodStart INTEGER AS LocalDate NOT NULL,
+    avgCycleLengthDays INTEGER AS Int NOT NULL,
+    avgPeriodLengthDays INTEGER AS Int NOT NULL,
+    tryingToConceive INTEGER AS Boolean NOT NULL,
+    onContraception INTEGER AS Boolean NOT NULL,
+    irregularCycles INTEGER AS Boolean NOT NULL,
+    onboardingComplete INTEGER AS Boolean NOT NULL,
+    createdAt INTEGER AS Instant NOT NULL,
+    dailyStepsGoal INTEGER AS Int NOT NULL DEFAULT 8000,
+    sleepGoalMinutes INTEGER AS Int NOT NULL DEFAULT 480,
+    waterGoalGlasses INTEGER AS Int NOT NULL DEFAULT 8,
+    remindPeriodEnabled INTEGER AS Boolean NOT NULL DEFAULT 1,
+    remindWaterEnabled INTEGER AS Boolean NOT NULL DEFAULT 0,
+    waterReminderIntervalHours INTEGER AS Int NOT NULL DEFAULT 3,
+    remindPillsEnabled INTEGER AS Boolean NOT NULL DEFAULT 1
+);
+
+get:
+SELECT * FROM userProfile WHERE id = 0;
+
+clear:
+DELETE FROM userProfile;
+
+upsert:
+INSERT OR REPLACE INTO userProfile(
+    id, tamaName, lastPeriodStart, avgCycleLengthDays, avgPeriodLengthDays,
+    tryingToConceive, onContraception, irregularCycles, onboardingComplete,
+    createdAt, dailyStepsGoal, sleepGoalMinutes, waterGoalGlasses,
+    remindPeriodEnabled, remindWaterEnabled, waterReminderIntervalHours, remindPillsEnabled
+) VALUES (
+    0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+);

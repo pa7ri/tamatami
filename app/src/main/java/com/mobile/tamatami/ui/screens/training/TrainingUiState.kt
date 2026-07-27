@@ -1,9 +1,9 @@
 package com.mobile.tamatami.ui.screens.training
 
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
 import com.mobile.tamatami.data.health.StepDataSource
 import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.model.SleepSummary
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.sleep.ExpectedSleepPredictor
 import com.mobile.tamatami.domain.training.TrainingRecommender
 import com.mobile.tamatami.domain.training.WorkoutIntensity
@@ -24,7 +24,7 @@ sealed interface StepsUiState {
 
 data class TrainingUiState(
     val recommendation: WorkoutRecommendation,
-    val recentWorkouts: List<WorkoutLogEntity>,
+    val recentWorkouts: List<Workout>,
     val energy: Int?,
     val sleep: SleepSummary?,
     val steps: StepsUiState,

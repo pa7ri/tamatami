@@ -3,7 +3,7 @@ package com.mobile.tamatami.ui.screens.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
+import com.mobile.tamatami.db.UserProfile
 import com.mobile.tamatami.data.repository.CycleRepository
 import com.mobile.tamatami.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 
 /** In-progress onboarding answers, persisted in memory only until the user confirms. */
@@ -43,22 +44,30 @@ class OnboardingViewModel(
 
     fun finish(onDone: () -> Unit) {
         val d = _draft.value
+        val ktxStart = d.lastPeriodStart.toKotlinLocalDate()
         viewModelScope.launch {
             userRepository.saveProfile(
-                UserProfileEntity(
+                UserProfile(
                     id = 0,
                     tamaName = d.tamaName.ifBlank { "Tama" },
-                    lastPeriodStart = d.lastPeriodStart,
+                    lastPeriodStart = ktxStart,
                     avgCycleLengthDays = d.avgCycleLengthDays,
                     avgPeriodLengthDays = d.avgPeriodLengthDays,
                     tryingToConceive = d.tryingToConceive,
                     onContraception = d.onContraception,
                     irregularCycles = d.irregularCycles,
                     onboardingComplete = true,
-                    createdAt = Instant.now(),
+                    createdAt = Clock.System.now(),
+                    dailyStepsGoal = 8000,
+                    sleepGoalMinutes = 480,
+                    waterGoalGlasses = 8,
+                    remindPeriodEnabled = true,
+                    remindWaterEnabled = false,
+                    waterReminderIntervalHours = 3,
+                    remindPillsEnabled = true,
                 )
             )
-            cycleRepository.seedCycleEntry(d.lastPeriodStart, d.avgCycleLengthDays)
+            cycleRepository.seedCycleEntry(ktxStart, d.avgCycleLengthDays)
             onDone()
         }
     }

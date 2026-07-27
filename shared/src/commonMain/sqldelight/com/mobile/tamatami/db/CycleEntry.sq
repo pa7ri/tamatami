@@ -1,0 +1,35 @@
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE cycleEntry (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    startDate INTEGER AS LocalDate NOT NULL,
+    endDate INTEGER AS LocalDate,
+    lengthDays INTEGER AS Int
+);
+
+CREATE UNIQUE INDEX cycleEntry_startDate ON cycleEntry(startDate);
+
+observeAll:
+SELECT * FROM cycleEntry ORDER BY startDate DESC;
+
+latest:
+SELECT * FROM cycleEntry ORDER BY startDate DESC LIMIT 1;
+
+byStart:
+SELECT * FROM cycleEntry WHERE startDate = ? LIMIT 1;
+
+insert:
+INSERT OR REPLACE INTO cycleEntry(startDate, endDate, lengthDays)
+VALUES (?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO cycleEntry(id, startDate, endDate, lengthDays)
+VALUES (?, ?, ?, ?);
+
+getAll:
+SELECT * FROM cycleEntry;
+
+clear:
+DELETE FROM cycleEntry;

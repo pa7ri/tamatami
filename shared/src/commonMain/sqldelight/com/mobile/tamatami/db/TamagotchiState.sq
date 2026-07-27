@@ -1,0 +1,23 @@
+import kotlin.Boolean;
+import kotlin.Int;
+import com.mobile.tamatami.domain.model.TamagotchiMood;
+
+CREATE TABLE tamagotchiState (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    lastMood TEXT AS TamagotchiMood NOT NULL,
+    hatched INTEGER AS Boolean NOT NULL,
+    accessoriesJson TEXT NOT NULL
+);
+
+observe:
+SELECT * FROM tamagotchiState WHERE id = 0 LIMIT 1;
+
+get:
+SELECT * FROM tamagotchiState WHERE id = 0 LIMIT 1;
+
+upsert:
+INSERT OR REPLACE INTO tamagotchiState(id, lastMood, hatched, accessoriesJson)
+VALUES (0, ?, ?, ?);
+
+clear:
+DELETE FROM tamagotchiState;

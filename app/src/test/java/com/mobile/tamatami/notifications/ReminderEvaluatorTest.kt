@@ -1,22 +1,22 @@
 package com.mobile.tamatami.notifications
 
 import com.google.common.truth.Truth.assertThat
-import com.mobile.tamatami.data.db.entity.MedicationEntity
+import com.mobile.tamatami.db.Medication
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalTime
 import org.junit.Test
-import java.time.Instant
-import java.time.LocalTime
 
 class ReminderEvaluatorTest {
 
-    private fun med(id: Long, slots: Set<TimeOfDay>) = MedicationEntity(
+    private fun med(id: Long, slots: Set<TimeOfDay>) = Medication(
         id = id,
         name = "med$id",
         dosesPerDay = slots.size,
         slotsMask = MedicationSchedule.maskOf(slots),
         active = true,
-        createdAt = Instant.ofEpochMilli(0),
+        createdAt = Instant.fromEpochMilliseconds(0),
     )
 
     @Test
@@ -26,7 +26,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = 1,
             glasses = 0,
             goal = 8,
-            now = LocalTime.of(15, 0),
+            now = LocalTime(15, 0),
             activeMeds = emptyList(),
             takenByMed = emptyMap(),
         )
@@ -41,7 +41,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = 3,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(15, 0),
+            now = LocalTime(15, 0),
             activeMeds = emptyList(),
             takenByMed = emptyMap(),
         )
@@ -56,7 +56,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = null,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(10, 0), // past MORNING (09:00), before AFTERNOON
+            now = LocalTime(10, 0), // past MORNING (09:00), before AFTERNOON
             activeMeds = listOf(morningMed),
             takenByMed = emptyMap(),
         )
@@ -70,7 +70,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = null,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(10, 0),
+            now = LocalTime(10, 0),
             activeMeds = listOf(morningMed),
             takenByMed = mapOf(1L to setOf(TimeOfDay.MORNING)),
         )
@@ -85,7 +85,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = null,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(15, 0), // past AFTERNOON (14:00), before EVENING
+            now = LocalTime(15, 0), // past AFTERNOON (14:00), before EVENING
             activeMeds = listOf(eveningMed),
             takenByMed = emptyMap(),
         )
@@ -99,7 +99,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = null,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(7, 0), // before MORNING (09:00)
+            now = LocalTime(7, 0), // before MORNING (09:00)
             activeMeds = listOf(morningMed),
             takenByMed = emptyMap(),
         )
@@ -113,7 +113,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = 1, // would otherwise fire
             glasses = 0,
             goal = 8,
-            now = LocalTime.of(10, 0),
+            now = LocalTime(10, 0),
             activeMeds = listOf(morningMed),
             takenByMed = emptyMap(),
             remindPeriod = false,
@@ -130,7 +130,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = 1,
             glasses = 0, // would otherwise be behind pace
             goal = 8,
-            now = LocalTime.of(15, 0),
+            now = LocalTime(15, 0),
             activeMeds = emptyList(),
             takenByMed = emptyMap(),
             remindWater = false,
@@ -146,7 +146,7 @@ class ReminderEvaluatorTest {
             daysUntilNextPeriod = null,
             glasses = 8,
             goal = 8,
-            now = LocalTime.of(10, 0), // past MORNING, untaken
+            now = LocalTime(10, 0), // past MORNING, untaken
             activeMeds = listOf(morningMed),
             takenByMed = emptyMap(),
             remindPills = false,

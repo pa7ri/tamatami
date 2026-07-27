@@ -1,0 +1,39 @@
+import kotlin.Boolean;
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.Instant;
+
+CREATE TABLE medication (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    dosesPerDay INTEGER AS Int NOT NULL,
+    slotsMask INTEGER AS Int NOT NULL,
+    active INTEGER AS Boolean NOT NULL DEFAULT 1,
+    createdAt INTEGER AS Instant NOT NULL
+);
+
+observeActive:
+SELECT * FROM medication WHERE active = 1 ORDER BY createdAt;
+
+observeAll:
+SELECT * FROM medication ORDER BY createdAt;
+
+insert:
+INSERT OR REPLACE INTO medication(name, dosesPerDay, slotsMask, active, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO medication(id, name, dosesPerDay, slotsMask, active, createdAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+deleteById:
+DELETE FROM medication WHERE id = ?;
+
+getAll:
+SELECT * FROM medication;
+
+clear:
+DELETE FROM medication;

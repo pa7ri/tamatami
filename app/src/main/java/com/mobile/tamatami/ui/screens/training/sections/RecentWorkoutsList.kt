@@ -19,13 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.training.WorkoutIntensity
 import com.mobile.tamatami.ui.screens.training.displayName
+import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun RecentWorkoutsList(workouts: List<WorkoutLogEntity>) {
+fun RecentWorkoutsList(workouts: List<Workout>) {
     Column {
         Text(
             "Recent workouts",
@@ -48,7 +49,7 @@ fun RecentWorkoutsList(workouts: List<WorkoutLogEntity>) {
 }
 
 @Composable
-private fun WorkoutRow(workout: WorkoutLogEntity) {
+private fun WorkoutRow(workout: Workout) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -69,13 +70,14 @@ private fun WorkoutRow(workout: WorkoutLogEntity) {
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = workout.date.format(formatter),
+                    text = workout.date.toJavaLocalDate().format(formatter),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (!workout.notes.isNullOrBlank()) {
+                val notes = workout.notes
+                if (!notes.isNullOrBlank()) {
                     Text(
-                        text = workout.notes,
+                        text = notes,
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }

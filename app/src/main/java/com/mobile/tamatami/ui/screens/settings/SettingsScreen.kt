@@ -43,6 +43,7 @@ import com.mobile.tamatami.ui.screens.settings.sections.DatePickerDialogCompat
 import com.mobile.tamatami.ui.screens.settings.sections.NumberStepperRow
 import com.mobile.tamatami.ui.screens.settings.sections.SettingsSectionCard
 import com.mobile.tamatami.ui.screens.settings.sections.SwitchRow
+import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
@@ -225,7 +226,7 @@ fun SettingsScreen(
             item {
                 DataBackupSection(
                     backupRepository = container.backupRepository,
-                    today = container.clock.today(),
+                    today = container.clock.today().toJavaLocalDate(),
                 )
             }
 

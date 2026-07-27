@@ -36,6 +36,8 @@ import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.hormones.sections.AddEntrySheet
 import com.mobile.tamatami.ui.screens.hormones.sections.HormoneChart
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.format.DateTimeFormatter
 
 private val dateHeader: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d")
@@ -82,7 +84,7 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
                         )
                         HormoneChart(
                             marker = state.selectedMarker,
-                            points = state.markerPoints,
+                            points = state.markerPoints.map { it.first.toJavaLocalDate() to it.second },
                         )
                         Text(
                             "Reference: ${state.selectedMarker.expectedRange.start}–" +
@@ -136,7 +138,7 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
                 state.entriesByDate.toSortedMap(compareByDescending { it }).forEach { (date, entries) ->
                     stickyHeader {
                         Text(
-                            text = date.format(dateHeader),
+                            text = date.toJavaLocalDate().format(dateHeader),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
@@ -159,16 +161,17 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                     )
-                                    if (!entry.notes.isNullOrBlank()) {
+                                    val notes = entry.notes
+                                    if (!notes.isNullOrBlank()) {
                                         Text(
-                                            entry.notes,
+                                            notes,
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
                                 Text(
-                                    text = "${entry.value} ${entry.unit}",
+                                    text = "${entry.value_} ${entry.unit}",
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                             }
@@ -182,10 +185,12 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
 
     if (sheetOpen) {
         AddEntrySheet(
-            today = today,
+            today = today.toJavaLocalDate(),
             initialMarker = state.selectedMarker,
             onDismiss = { sheetOpen = false },
-            onSave = viewModel::saveEntry,
+            onSave = { date, marker, value, unit, notes ->
+                viewModel.saveEntry(date.toKotlinLocalDate(), marker, value, unit, notes)
+            },
         )
     }
 }

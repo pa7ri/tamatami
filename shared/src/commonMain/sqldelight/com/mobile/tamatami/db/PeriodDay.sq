@@ -1,0 +1,34 @@
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.model.PeriodFlow;
+
+CREATE TABLE periodDay (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    flow TEXT AS PeriodFlow NOT NULL
+);
+
+CREATE UNIQUE INDEX periodDay_date ON periodDay(date);
+
+observeByDate:
+SELECT * FROM periodDay WHERE date = ? LIMIT 1;
+
+observeRecent:
+SELECT * FROM periodDay ORDER BY date DESC LIMIT 90;
+
+insert:
+INSERT OR REPLACE INTO periodDay(date, flow)
+VALUES (?, ?);
+
+upsert:
+INSERT OR REPLACE INTO periodDay(id, date, flow)
+VALUES (?, ?, ?);
+
+deleteByDate:
+DELETE FROM periodDay WHERE date = ?;
+
+getAll:
+SELECT * FROM periodDay;
+
+clear:
+DELETE FROM periodDay;

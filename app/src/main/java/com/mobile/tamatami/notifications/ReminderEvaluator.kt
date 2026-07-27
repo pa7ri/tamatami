@@ -1,10 +1,10 @@
 package com.mobile.tamatami.notifications
 
-import com.mobile.tamatami.data.db.entity.MedicationEntity
+import com.mobile.tamatami.db.Medication
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
 import com.mobile.tamatami.domain.reminders.ReminderLogic
-import java.time.LocalTime
+import kotlinx.datetime.LocalTime
 
 /**
  * Pure orchestration for the reminder worker: given the day's already-read
@@ -37,7 +37,7 @@ object ReminderEvaluator {
         glasses: Int,
         goal: Int,
         now: LocalTime,
-        activeMeds: List<MedicationEntity>,
+        activeMeds: List<Medication>,
         takenByMed: Map<Long, Set<TimeOfDay>>,
         remindPeriod: Boolean = true,
         remindWater: Boolean = true,

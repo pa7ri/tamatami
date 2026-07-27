@@ -1,0 +1,35 @@
+import kotlin.Int;
+import kotlin.Long;
+import kotlinx.datetime.LocalDate;
+import com.mobile.tamatami.domain.sleep.SleepRating;
+
+CREATE TABLE sleepLog (
+    id INTEGER AS Long NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER AS LocalDate NOT NULL,
+    bedMinuteOfDay INTEGER AS Int NOT NULL,
+    wakeMinuteOfDay INTEGER AS Int NOT NULL,
+    durationMinutes INTEGER AS Int NOT NULL,
+    rating TEXT AS SleepRating NOT NULL
+);
+
+CREATE UNIQUE INDEX sleepLog_date ON sleepLog(date);
+
+observeByDate:
+SELECT * FROM sleepLog WHERE date = ? LIMIT 1;
+
+observeRecent:
+SELECT * FROM sleepLog ORDER BY date DESC LIMIT ?;
+
+insert:
+INSERT OR REPLACE INTO sleepLog(date, bedMinuteOfDay, wakeMinuteOfDay, durationMinutes, rating)
+VALUES (?, ?, ?, ?, ?);
+
+upsert:
+INSERT OR REPLACE INTO sleepLog(id, date, bedMinuteOfDay, wakeMinuteOfDay, durationMinutes, rating)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getAll:
+SELECT * FROM sleepLog;
+
+clear:
+DELETE FROM sleepLog;

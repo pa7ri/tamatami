@@ -29,16 +29,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
 import com.mobile.tamatami.domain.calendar.CalendarDay
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
+import com.mobile.tamatami.domain.model.Workout
 import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.ui.screens.home.displayName
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d")
@@ -72,7 +73,7 @@ fun DayStatusCard(
 
             // ----- Header --------------------------------------------------
             Text(
-                text = day.date.format(dateFmt),
+                text = day.date.toJavaLocalDate().format(dateFmt),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -203,7 +204,7 @@ private fun Section(label: String) {
 }
 
 @Composable
-private fun WorkoutRow(w: WorkoutLogEntity) {
+private fun WorkoutRow(w: Workout) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
