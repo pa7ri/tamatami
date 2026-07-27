@@ -21,8 +21,15 @@ kotlin {
     // iOS targets. Building/linking a runnable framework requires Xcode's Apple
     // SDKs, but Kotlin/Native compiles the shared code for these targets here
     // (konan toolchain) — so the shared core is validated for iOS too.
-    iosArm64()
-    iosSimulatorArm64()
+    //
+    // Each target produces a `Shared.framework` the SwiftUI app links against.
+    // Static framework keeps the app self-contained (no embedded dylib step).
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
