@@ -52,9 +52,14 @@ them.
 3. Delete the auto-generated `ContentView.swift` and the `App` file — you'll use
    the ones already in `iosApp/Tamatami/`.
 4. **Add the existing sources:** right-click the group ▸ *Add Files to
-   "Tamatami"…* ▸ select every `.swift` in `iosApp/Tamatami/`
-   (`TamatamiApp.swift`, `RootView.swift`, `HomeScreen.swift`,
-   `MedicationScreen.swift`, `FlowWatcher.swift`, `NotificationScheduler.swift`).
+   "Tamatami"…* ▸ select every `.swift` in `iosApp/Tamatami/`:
+   - `TamatamiApp.swift` (entry + `AppState`)
+   - `RootView.swift` (onboarding-vs-tabs gate + tab shell)
+   - `OnboardingFlow.swift`
+   - `HomeScreen.swift`, `CalendarScreen.swift`, `TrainingScreen.swift`,
+     `CycleInfoScreen.swift`, `MedicationScreen.swift`,
+     `HormonesScreen.swift`, `SettingsScreen.swift`
+   - `FlowWatcher.swift`, `NotificationScheduler.swift`
    Uncheck "Copy items if needed" (they're already in place).
 5. Set **minimum deployment** to iOS 16 (the Swift uses `NavigationStack` /
    `.task`).
@@ -150,12 +155,32 @@ the shared code (already compiled for iOS) guarantees.
 ## What's implemented vs. stubbed
 
 **Shared (done, compiles for iOS):** all domain logic, all 7 repositories over
-SQLDelight, the `TamatamiSdk` facade, `FlowObserver`, `today()/now()/currentCycle()`.
+SQLDelight, the `TamatamiSdk` facade (repos + `today()/now()/localDate()`,
+`currentCycle()`, `observeOnboardingComplete()`, `completeOnboarding()`,
+`updateSettings()`), `FlowObserver`.
 
-**iOS app (scaffold):** app entry + SDK bootstrap, Home + Medication screens
-(fully wired to shared repos), notification permission + shared-logic-driven
-scheduler. **Not yet built:** the remaining screens (Calendar, Training, Cycle
-info, Hormones, Settings, onboarding) — each follows the exact `FlowWatcher` +
-suspend-call pattern shown in `MedicationScreen.swift`; a HealthKit step source
-(the Android `StepDataSource` is Health-Connect-only and has no shared
-equivalent); and `BGTaskScheduler` registration for background reminders.
+**iOS app (scaffold — written, not yet built in Xcode):**
+- Entry + SDK bootstrap + notification permission.
+- **Onboarding flow** → `completeOnboarding`; the root view gates on
+  `observeOnboardingComplete()` and switches to the tabs automatically.
+- Screens wired to shared repos: **Home** (cycle snapshot), **Calendar**
+  (today's log + log water/flow), **Training** (shared recommendation + recent
+  workouts + log), **Cycle info** (pure `guideFor` per phase), **Medication**
+  (observe/add/toggle), **Hormones** (recent + add), **Settings**
+  (load/edit/`updateSettings`).
+- Notification permission + shared-logic-driven scheduler.
+
+**Not yet built:** the full month-grid calendar (data is available via
+`cycle.observeRecentPeriodDays()` + the shared `MonthBuilder`; the scaffold shows
+a compact day view instead); the Tamagotchi avatar/animations; add/edit *sheets*
+(screens use one-tap "sample" actions to prove the write path — swap for real
+forms); Nutrition screen (follows `CycleInfoScreen` using `nutritionFor(phase)`);
+a HealthKit step source (Android's `StepDataSource` is Health-Connect-only, no
+shared equivalent); `BGTaskScheduler` registration for background reminders.
+
+> **First-build reality check:** none of the Swift has been compiled (no Xcode
+> here). Expect to fix a handful of bridged-symbol names on the first build —
+> see §7. In particular verify: `TrainingRecommender.shared` / `ReminderEvaluator.shared`
+> (Kotlin `object` → `.shared`), `PhaseGuideKt.guideFor` (top-level fun →
+> `<File>Kt`), `HormoneLog.value_`, enum case casing, and `KotlinInt`/`KotlinBoolean`
+> boxing on `daysUntilNextPeriod` / the onboarding-gate flow.

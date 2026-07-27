@@ -10,8 +10,11 @@ import com.mobile.tamatami.data.repository.TamagotchiRepository
 import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.data.repository.WorkoutRepository
 import com.mobile.tamatami.db.TamatamiDb
+import com.mobile.tamatami.db.UserProfile
 import com.mobile.tamatami.domain.model.CycleSnapshot
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -45,8 +48,90 @@ class TamatamiSdk {
     fun today(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
     fun now(): Instant = Clock.System.now()
 
+    /** Build a [LocalDate] from y/m/d — lets Swift pass DateComponents ints
+     *  rather than constructing the bridged kotlinx type directly. */
+    fun localDate(year: Int, month: Int, day: Int): LocalDate = LocalDate(year, month, day)
+
+    /**
+     * Whether onboarding is complete, as a non-null [Boolean] Flow. Avoids
+     * bridging a `Flow<UserProfile?>` (nullable generic) to Swift, which is
+     * fragile in Kotlin/Native — the root gate observes this instead.
+     */
+    fun observeOnboardingComplete(): Flow<Boolean> =
+        user.observeProfile().map { it?.onboardingComplete ?: false }
+
     /** One-shot cycle snapshot for [date] — for the notification scheduler,
      *  which needs a single value rather than a Flow subscription. */
     suspend fun currentCycle(date: LocalDate): CycleSnapshot =
         cycle.observeTodayCycle(date).first()
+
+    /**
+     * Create + persist the profile from onboarding answers, and seed the first
+     * cycle entry. Keeps the 17-field [UserProfile] construction in one place so
+     * the SwiftUI layer only passes the handful of user-entered values.
+     */
+    suspend fun completeOnboarding(
+        tamaName: String,
+        lastPeriodStart: LocalDate,
+        avgCycleLengthDays: Int,
+        avgPeriodLengthDays: Int,
+        tryingToConceive: Boolean,
+        onContraception: Boolean,
+        irregularCycles: Boolean,
+    ) {
+        user.saveProfile(
+            UserProfile(
+                id = 0,
+                tamaName = tamaName.ifBlank { "Tama" },
+                lastPeriodStart = lastPeriodStart,
+                avgCycleLengthDays = avgCycleLengthDays,
+                avgPeriodLengthDays = avgPeriodLengthDays,
+                tryingToConceive = tryingToConceive,
+                onContraception = onContraception,
+                irregularCycles = irregularCycles,
+                onboardingComplete = true,
+                createdAt = Clock.System.now(),
+                dailyStepsGoal = 8_000,
+                sleepGoalMinutes = 8 * 60,
+                waterGoalGlasses = 8,
+                remindPeriodEnabled = true,
+                remindWaterEnabled = false,
+                waterReminderIntervalHours = 3,
+                remindPillsEnabled = true,
+            )
+        )
+        cycle.seedCycleEntry(lastPeriodStart, avgCycleLengthDays)
+    }
+
+    /**
+     * Read-modify-write the profile for the Settings screen. Only the fields the
+     * UI edits are parameters; everything else (createdAt, onboardingComplete) is
+     * preserved. No-op if there's no profile yet.
+     */
+    suspend fun updateSettings(
+        tamaName: String,
+        avgCycleLengthDays: Int,
+        avgPeriodLengthDays: Int,
+        dailyStepsGoal: Int,
+        sleepGoalMinutes: Int,
+        waterGoalGlasses: Int,
+        remindPeriodEnabled: Boolean,
+        remindWaterEnabled: Boolean,
+        remindPillsEnabled: Boolean,
+    ) {
+        val current = user.getProfile() ?: return
+        user.saveProfile(
+            current.copy(
+                tamaName = tamaName.ifBlank { "Tama" },
+                avgCycleLengthDays = avgCycleLengthDays,
+                avgPeriodLengthDays = avgPeriodLengthDays,
+                dailyStepsGoal = dailyStepsGoal,
+                sleepGoalMinutes = sleepGoalMinutes,
+                waterGoalGlasses = waterGoalGlasses,
+                remindPeriodEnabled = remindPeriodEnabled,
+                remindWaterEnabled = remindWaterEnabled,
+                remindPillsEnabled = remindPillsEnabled,
+            )
+        )
+    }
 }

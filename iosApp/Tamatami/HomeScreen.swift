@@ -28,6 +28,18 @@ struct HomeScreen: View {
             }
             .padding()
             .navigationTitle("Tamatami")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink { SettingsScreen() } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink { HormonesScreen() } label: {
+                        Image(systemName: "waveform.path.ecg")
+                    }
+                }
+            }
             .onAppear { model.start(sdk: app.sdk) }
             .onDisappear { model.stop() }
         }
