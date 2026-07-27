@@ -24,7 +24,7 @@ struct HormonesScreen: View {
                             HStack {
                                 Text(e.hormone)
                                 Spacer()
-                                Text("\(e.value_, specifier: "%.1f") \(e.unit)")
+                                Text("\(String(format: "%.1f", e.value_)) \(e.unit)")
                                     .foregroundStyle(.secondary)
                             }
                         }

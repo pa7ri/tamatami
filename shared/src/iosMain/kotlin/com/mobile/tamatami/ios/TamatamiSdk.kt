@@ -24,6 +24,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 
 /**
@@ -56,6 +57,11 @@ class TamatamiSdk {
     /** Build a [LocalDate] from y/m/d — lets Swift pass DateComponents ints
      *  rather than constructing the bridged kotlinx type directly. */
     fun localDate(year: Int, month: Int, day: Int): LocalDate = LocalDate(year, month, day)
+
+    /** Current local wall-clock time — for the reminder-window checks the
+     *  notification scheduler feeds to [com.mobile.tamatami.notifications.ReminderEvaluator]. */
+    fun nowTime(): kotlinx.datetime.LocalTime =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
 
     /**
      * Whether onboarding is complete, as a non-null [Boolean] Flow. Avoids

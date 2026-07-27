@@ -1,12 +1,18 @@
 import SwiftUI
 import Shared
 
+/// The domain `TamagotchiState` (mood/accessories/bounceHz) is bridged as
+/// `TamagotchiState_` — Kotlin/Native appended `_` because the SQLDelight row
+/// type `db.TamagotchiState` claimed the unsuffixed Swift name. Alias it for
+/// readability.
+typealias TamaState = TamagotchiState_
+
 /// The Tamagotchi mascot, driven by the shared `TamagotchiMoodEngine` (via
 /// `tamagotchi.observe`). This is an emoji-based stand-in for the Android
 /// vector avatar — mood picks the face, accessories add badges, and `bounceHz`
 /// drives a continuous bounce. Swap the emoji for real art/Canvas later.
 struct TamagotchiAvatar: View {
-    let state: TamagotchiState
+    let state: TamaState
     @State private var bouncing = false
 
     var body: some View {
@@ -68,12 +74,12 @@ struct TamagotchiAvatar: View {
 final class TamagotchiModel: ObservableObject {
     // nil until the first shared emission — avoids guessing the bridged name of
     // the Kotlin companion's default (TamagotchiState.Companion.Idle).
-    @Published var state: TamagotchiState?
+    @Published var state: TamaState?
 
-    private var watcher: FlowWatcher<TamagotchiState>?
+    private var watcher: FlowWatcher<TamaState>?
 
     func start(sdk: TamatamiSdk) {
-        watcher = FlowWatcher<TamagotchiState>({
+        watcher = FlowWatcher<TamaState>({
             FlowObserver(flow: sdk.tamagotchi.observe(today: sdk.today()))
         }) { [weak self] s in self?.state = s }
     }

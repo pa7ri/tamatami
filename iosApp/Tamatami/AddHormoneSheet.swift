@@ -25,7 +25,9 @@ struct AddHormoneSheet: View {
                     TextField("Value", text: $valueText)
                         .keyboardType(.decimalPad)
                     TextField("Unit", text: $unit)
-                    Text("Reference: \(marker.expectedRange.start, specifier: "%.1f")–\(marker.expectedRange.endInclusive, specifier: "%.1f") \(marker.defaultUnit)")
+                    let lo = String(format: "%.1f", marker.rangeLow)
+                    let hi = String(format: "%.1f", marker.rangeHigh)
+                    Text("Reference: \(lo)–\(hi) \(marker.defaultUnit)")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
