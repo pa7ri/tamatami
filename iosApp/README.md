@@ -58,7 +58,8 @@ them.
    - `OnboardingFlow.swift`
    - `HomeScreen.swift`, `CalendarScreen.swift`, `TrainingScreen.swift`,
      `CycleInfoScreen.swift`, `MedicationScreen.swift`,
-     `HormonesScreen.swift`, `SettingsScreen.swift`
+     `HormonesScreen.swift`, `SettingsScreen.swift`, `NutritionScreen.swift`
+   - `TamagotchiAvatar.swift`
    - `AddMedicationSheet.swift`, `LogWorkoutSheet.swift`, `AddHormoneSheet.swift`
    - `FlowWatcher.swift`, `NotificationScheduler.swift`
    Uncheck "Copy items if needed" (they're already in place).
@@ -164,21 +165,25 @@ SQLDelight, the `TamatamiSdk` facade (repos + `today()/now()/localDate()`,
 - Entry + SDK bootstrap + notification permission.
 - **Onboarding flow** → `completeOnboarding`; the root view gates on
   `observeOnboardingComplete()` and switches to the tabs automatically.
-- Screens wired to shared repos: **Home** (cycle snapshot), **Calendar**
-  (full 6×7 month grid via the shared `MonthBuilder`, phase-colored cells with
-  today/period/predicted markers, month nav, tap-a-day detail that logs
-  water/flow), **Training** (shared recommendation + recent workouts + **log
-  sheet**), **Cycle info** (pure `guideFor` per phase), **Medication**
-  (observe/toggle + **add sheet** with name & slot multi-select), **Hormones**
-  (recent + **add-reading sheet**), **Settings** (load/edit/`updateSettings`).
+- Screens wired to shared repos: **Home** (Tamagotchi avatar + cycle snapshot),
+  **Calendar** (full 6×7 month grid via the shared `MonthBuilder`, phase-colored
+  cells with today/period/predicted markers, month nav, tap-a-day detail that
+  logs water/flow), **Training** (shared recommendation + recent workouts +
+  **log sheet**), **Cycle info** (pure `guideFor` per phase), **Nutrition**
+  (pure `nutritionFor` per phase), **Medication** (observe/toggle + **add
+  sheet**), **Hormones** (recent + **add-reading sheet**), **Settings**
+  (load/edit/`updateSettings`).
+- **Tamagotchi avatar** on Home: emoji-based mood face + accessory badges +
+  `bounceHz`-driven animation, driven by the shared `TamagotchiMoodEngine` via
+  `tamagotchi.observe`. (Emoji stand-in for the Android vector art — swap for a
+  Canvas/asset when desired.)
 - Real input sheets: `AddMedicationSheet`, `LogWorkoutSheet`, `AddHormoneSheet`.
 - Notification permission + shared-logic-driven scheduler.
 
-**Not yet built:** the Tamagotchi avatar/animations; Nutrition screen (follows
-`CycleInfoScreen` using `nutritionFor(phase)`); a HealthKit step source
-(Android's `StepDataSource` is Health-Connect-only, no shared equivalent);
-`BGTaskScheduler` registration for background reminders; delete/edit affordances
-on logged rows.
+**Not yet built:** richer Tamagotchi art (currently emoji); a HealthKit step
+source (Android's `StepDataSource` is Health-Connect-only, no shared
+equivalent); `BGTaskScheduler` registration for background reminders;
+delete/edit affordances on logged rows.
 
 > **First-build reality check:** none of the Swift has been compiled (no Xcode
 > here). Expect to fix a handful of bridged-symbol names on the first build —

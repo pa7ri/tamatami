@@ -7,10 +7,14 @@ import Shared
 struct HomeScreen: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = HomeModel()
+    @StateObject private var tama = TamagotchiModel()
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
+                if let tamaState = tama.state {
+                    TamagotchiAvatar(state: tamaState)
+                }
                 if let cycle = model.cycle {
                     Text(phaseLabel(cycle.phase))
                         .font(.largeTitle).bold()
@@ -40,8 +44,8 @@ struct HomeScreen: View {
                     }
                 }
             }
-            .onAppear { model.start(sdk: app.sdk) }
-            .onDisappear { model.stop() }
+            .onAppear { model.start(sdk: app.sdk); tama.start(sdk: app.sdk) }
+            .onDisappear { model.stop(); tama.stop() }
         }
     }
 

@@ -35,6 +35,8 @@ private struct MainTabs: View {
                 .tabItem { Label("Training", systemImage: "figure.run") }
             CycleInfoScreen()
                 .tabItem { Label("Cycle", systemImage: "heart") }
+            NutritionScreen()
+                .tabItem { Label("Food", systemImage: "fork.knife") }
             MedicationScreen()
                 .tabItem { Label("Meds", systemImage: "pills") }
         }
