@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HormonesViewModel(
@@ -25,8 +27,8 @@ class HormonesViewModel(
 
     private val selectedMarker = MutableStateFlow(HormoneMarker.ESTROGEN)
 
-    private val recentSince: LocalDate get() = clock.today().minusDays(90)
-    private val chartSince: LocalDate get() = clock.today().minusDays(30)
+    private val recentSince: LocalDate get() = clock.today().minus(90, DateTimeUnit.DAY)
+    private val chartSince: LocalDate get() = clock.today().minus(30, DateTimeUnit.DAY)
 
     val state: StateFlow<HormonesUiState> = combine(
         selectedMarker,
@@ -40,7 +42,7 @@ class HormonesViewModel(
             entries = recent,
             markerPoints = markerEntries
                 .sortedBy { it.date }
-                .map { it.date to it.value },
+                .map { it.date to it.value_ },
         )
     }.stateIn(
         scope = viewModelScope,

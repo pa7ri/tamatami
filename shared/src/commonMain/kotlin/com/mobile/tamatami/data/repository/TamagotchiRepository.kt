@@ -7,12 +7,18 @@ import com.mobile.tamatami.domain.tamagotchi.TamagotchiMoodEngine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.datetime.LocalDate
 
+/**
+ * Derives today's [TamagotchiState] by combining the cycle snapshot with the
+ * day's logged data. Pure composition over the two repositories — no DB access
+ * of its own — so it's identical across platforms.
+ */
 class TamagotchiRepository(
     private val cycleRepo: CycleRepository,
     private val dailyRepo: DailyLogRepository,
 ) {
-    fun observe(today: java.time.LocalDate): Flow<TamagotchiState> = combine(
+    fun observe(today: LocalDate): Flow<TamagotchiState> = combine(
         cycleRepo.observeTodayCycle(today),
         dailyRepo.observeToday(today),
     ) { cycle: CycleSnapshot, daily: DailySnapshot ->

@@ -34,6 +34,8 @@ import com.mobile.tamatami.ui.screens.training.sections.RecentWorkoutsList
 import com.mobile.tamatami.ui.screens.training.sections.RecommendationCard
 import com.mobile.tamatami.ui.screens.training.sections.SleepCard
 import com.mobile.tamatami.ui.screens.training.sections.StepsCard
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 
 private const val HEALTH_CONNECT_PACKAGE = "com.google.android.apps.healthdata"
 
@@ -110,9 +112,11 @@ fun TrainingScreen(navController: NavHostController, container: AppContainer) {
 
     if (workoutSheetOpen) {
         LogWorkoutSheet(
-            date = today,
+            date = today.toJavaLocalDate(),
             onDismiss = { workoutSheetOpen = false },
-            onSave = viewModel::logWorkout,
+            onSave = { date, type, mins, intensity, notes ->
+                viewModel.logWorkout(date.toKotlinLocalDate(), type, mins, intensity, notes)
+            },
         )
     }
 

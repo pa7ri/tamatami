@@ -3,14 +3,12 @@ package com.mobile.tamatami.ui.screens.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.mobile.tamatami.data.db.dao.PeriodDayDao
 import com.mobile.tamatami.data.repository.CycleRepository
 import com.mobile.tamatami.data.repository.DailyLogRepository
 import com.mobile.tamatami.data.repository.UserRepository
 import com.mobile.tamatami.domain.calendar.MonthBuilder
 import com.mobile.tamatami.domain.model.CycleProfile
 import com.mobile.tamatami.domain.model.Mood
-import com.mobile.tamatami.domain.model.PeriodDay
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.domain.model.Symptom
 import com.mobile.tamatami.domain.nutrition.CravingHint
@@ -27,22 +25,23 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.toKotlinLocalDate
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModel(
     private val userRepository: UserRepository,
     private val cycleRepository: CycleRepository,
     private val dailyLogRepository: DailyLogRepository,
-    private val periodDayDao: PeriodDayDao,
     private val clock: Clock,
 ) : ViewModel() {
 
     private val today get() = clock.today()
 
-    private val displayedMonth = MutableStateFlow(YearMonth.from(clock.today()))
+    // Displayed month = first day of that month (kotlinx has no YearMonth).
+    private val displayedMonth = MutableStateFlow(today.let { LocalDate(it.year, it.monthNumber, 1) })
     private val selectedDate = MutableStateFlow<LocalDate?>(null)
 
     /**
@@ -53,7 +52,7 @@ class CalendarViewModel(
      */
     val state: StateFlow<CalendarUiState> = combine(
         userRepository.observeProfile(),
-        periodDayDao.observeRecent(),
+        cycleRepository.observeRecentPeriodDays(),
         cycleRepository.observeTodayCycle(today),
         displayedMonth,
         selectedDate,
@@ -62,18 +61,16 @@ class CalendarViewModel(
             displayedMonth = month,
             days = MonthBuilder.build(
                 year = month.year,
-                monthNumber = month.monthValue,
+                monthNumber = month.monthNumber,
                 profile = profile?.let {
                     CycleProfile(
-                        lastPeriodStart = it.lastPeriodStart.toKotlinLocalDate(),
+                        lastPeriodStart = it.lastPeriodStart,
                         avgCycleLengthDays = it.avgCycleLengthDays,
                         avgPeriodLengthDays = it.avgPeriodLengthDays,
                     )
                 },
-                loggedPeriodDays = periodDays.map {
-                    PeriodDay(it.date.toKotlinLocalDate(), it.flow)
-                },
-                today = today.toKotlinLocalDate(),
+                loggedPeriodDays = periodDays,
+                today = today,
             ),
             selectedDate = selected,
             cycle = cycle,
@@ -90,8 +87,8 @@ class CalendarViewModel(
         initialValue = CalendarUiState.empty(today),
     )
 
-    fun goPrevMonth() = displayedMonth.update { it.minusMonths(1) }
-    fun goNextMonth() = displayedMonth.update { it.plusMonths(1) }
+    fun goPrevMonth() = displayedMonth.update { it.minus(1, DateTimeUnit.MONTH) }
+    fun goNextMonth() = displayedMonth.update { it.plus(1, DateTimeUnit.MONTH) }
     fun selectDate(date: LocalDate?) = selectedDate.update { date }
 
     fun setFlow(date: LocalDate, flow: PeriodFlow) {
@@ -134,12 +131,11 @@ class CalendarViewModel(
         private val userRepository: UserRepository,
         private val cycleRepository: CycleRepository,
         private val dailyLogRepository: DailyLogRepository,
-        private val periodDayDao: PeriodDayDao,
         private val clock: Clock,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = CalendarViewModel(
-            userRepository, cycleRepository, dailyLogRepository, periodDayDao, clock,
+            userRepository, cycleRepository, dailyLogRepository, clock,
         ) as T
     }
 }

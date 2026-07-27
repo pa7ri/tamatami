@@ -3,7 +3,7 @@ package com.mobile.tamatami.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
+import com.mobile.tamatami.db.UserProfile
 import com.mobile.tamatami.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
 
 /**
  * Settings is profile-editing — every field is round-tripped to the
- * [UserProfileEntity] singleton row. We keep an in-memory draft separate from
+ * [UserProfile] singleton row. We keep an in-memory draft separate from
  * the persisted state so the user can edit freely; "Save" writes the whole
  * row back. The Compose layer collects [state] and [isDirty] and pushes
  * individual field updates via the `set*` methods.
@@ -31,7 +33,7 @@ class SettingsViewModel(
      * "dirty" flag and to preserve fields the UI doesn't touch (e.g.
      * `createdAt`, `onboardingComplete`) on save.
      */
-    private val original = MutableStateFlow<UserProfileEntity?>(null)
+    private val original = MutableStateFlow<UserProfile?>(null)
     private val draft = MutableStateFlow(SettingsUiState.Empty)
 
     val state: StateFlow<SettingsUiState> = draft.stateIn(
@@ -65,7 +67,7 @@ class SettingsViewModel(
                     SettingsUiState(
                         loaded = true,
                         tamaName = profile.tamaName,
-                        lastPeriodStart = profile.lastPeriodStart,
+                        lastPeriodStart = profile.lastPeriodStart.toJavaLocalDate(),
                         avgCycleLengthDays = profile.avgCycleLengthDays,
                         avgPeriodLengthDays = profile.avgPeriodLengthDays,
                         tryingToConceive = profile.tryingToConceive,
@@ -106,10 +108,10 @@ class SettingsViewModel(
         val d = draft.value
         if (!d.loaded) return
         val o = original.value
-        val saved = UserProfileEntity(
+        val saved = UserProfile(
             id = 0,
             tamaName = d.tamaName.ifBlank { "Tama" },
-            lastPeriodStart = d.lastPeriodStart,
+            lastPeriodStart = d.lastPeriodStart.toKotlinLocalDate(),
             avgCycleLengthDays = d.avgCycleLengthDays,
             avgPeriodLengthDays = d.avgPeriodLengthDays,
             tryingToConceive = d.tryingToConceive,
@@ -117,7 +119,7 @@ class SettingsViewModel(
             irregularCycles = d.irregularCycles,
             // Preserve onboarding flag / createdAt from the loaded row.
             onboardingComplete = o?.onboardingComplete ?: true,
-            createdAt = o?.createdAt ?: Instant.now(),
+            createdAt = o?.createdAt ?: Clock.System.now(),
             dailyStepsGoal = d.dailyStepsGoal,
             sleepGoalMinutes = d.sleepGoalHours * 60,
             waterGoalGlasses = d.waterGoalGlasses,
@@ -145,9 +147,9 @@ class SettingsViewModel(
 }
 
 /** Field-by-field comparison between the persisted row and the in-memory draft. */
-private fun UserProfileEntity.differsFrom(d: SettingsUiState): Boolean =
+private fun UserProfile.differsFrom(d: SettingsUiState): Boolean =
     tamaName != d.tamaName ||
-        lastPeriodStart != d.lastPeriodStart ||
+        lastPeriodStart != d.lastPeriodStart.toKotlinLocalDate() ||
         avgCycleLengthDays != d.avgCycleLengthDays ||
         avgPeriodLengthDays != d.avgPeriodLengthDays ||
         tryingToConceive != d.tryingToConceive ||

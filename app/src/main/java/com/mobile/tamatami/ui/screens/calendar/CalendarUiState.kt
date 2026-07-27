@@ -4,11 +4,11 @@ import com.mobile.tamatami.domain.calendar.CalendarDay
 import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.DailySnapshot
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.LocalDate
 
 data class CalendarUiState(
-    val displayedMonth: YearMonth,
+    /** First day of the displayed month (kotlinx-datetime has no YearMonth). */
+    val displayedMonth: LocalDate,
     val days: List<CalendarDay>,
     val selectedDate: LocalDate?,
     val cycle: CycleSnapshot,
@@ -17,7 +17,7 @@ data class CalendarUiState(
 ) {
     companion object {
         fun empty(today: LocalDate): CalendarUiState = CalendarUiState(
-            displayedMonth = YearMonth.from(today),
+            displayedMonth = LocalDate(today.year, today.monthNumber, 1),
             days = emptyList(),
             selectedDate = null,
             cycle = CycleSnapshot(

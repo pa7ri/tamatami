@@ -28,6 +28,9 @@ CREATE TABLE userProfile (
 get:
 SELECT * FROM userProfile WHERE id = 0;
 
+clear:
+DELETE FROM userProfile;
+
 upsert:
 INSERT OR REPLACE INTO userProfile(
     id, tamaName, lastPeriodStart, avgCycleLengthDays, avgPeriodLengthDays,

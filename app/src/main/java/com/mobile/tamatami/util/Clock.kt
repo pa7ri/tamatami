@@ -1,11 +1,15 @@
 package com.mobile.tamatami.util
 
-import java.time.Instant
-import java.time.LocalDate
+import kotlinx.datetime.Clock as KtxClock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 
 /**
  * Test-friendly clock. Production code uses [SystemClock]; tests can pass a
- * fake without touching the JVM-wide clock.
+ * fake without touching the JVM-wide clock. Now speaks kotlinx-datetime types
+ * to match the shared (KMP) data layer.
  */
 interface Clock {
     fun today(): LocalDate
@@ -15,6 +19,6 @@ interface Clock {
 }
 
 object SystemClock : Clock {
-    override fun today(): LocalDate = LocalDate.now()
-    override fun now(): Instant = Instant.now()
+    override fun today(): LocalDate = KtxClock.System.todayIn(TimeZone.currentSystemDefault())
+    override fun now(): Instant = KtxClock.System.now()
 }

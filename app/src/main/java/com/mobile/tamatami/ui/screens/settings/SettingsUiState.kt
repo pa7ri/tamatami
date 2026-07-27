@@ -3,7 +3,7 @@ package com.mobile.tamatami.ui.screens.settings
 import java.time.LocalDate
 
 /**
- * UI projection of [com.mobile.tamatami.data.db.entity.UserProfileEntity].
+ * UI projection of [com.mobile.tamatami.db.UserProfile].
  *
  * `loaded = false` means we're still waiting for the first DB emission — the
  * screen shows a spinner in that case. Once loaded, the fields mirror the
@@ -21,7 +21,7 @@ data class SettingsUiState(
     val dailyStepsGoal: Int = 8_000,
     val sleepGoalHours: Int = 8,
     val waterGoalGlasses: Int = 8,
-    // Per-type reminder toggles. Defaults mirror UserProfileEntity.
+    // Per-type reminder toggles. Defaults mirror UserProfile.
     val remindPeriodEnabled: Boolean = true,
     val remindWaterEnabled: Boolean = false,
     val remindPillsEnabled: Boolean = true,

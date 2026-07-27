@@ -1,37 +1,26 @@
 package com.mobile.tamatami.data.backup
 
-import com.mobile.tamatami.data.db.entity.CravingLogEntity
-import com.mobile.tamatami.data.db.entity.CycleEntryEntity
-import com.mobile.tamatami.data.db.entity.HormoneLogEntity
-import com.mobile.tamatami.data.db.entity.MedicationEntity
-import com.mobile.tamatami.data.db.entity.MedicationIntakeEntity
-import com.mobile.tamatami.data.db.entity.MoodLogEntity
-import com.mobile.tamatami.data.db.entity.PeriodDayEntity
-import com.mobile.tamatami.data.db.entity.SleepLogEntity
-import com.mobile.tamatami.data.db.entity.SymptomLogEntity
-import com.mobile.tamatami.data.db.entity.TamagotchiStateEntity
-import com.mobile.tamatami.data.db.entity.UserProfileEntity
-import com.mobile.tamatami.data.db.entity.WaterLogEntity
-import com.mobile.tamatami.data.db.entity.WorkoutLogEntity
-import com.mobile.tamatami.domain.model.Mood
-import com.mobile.tamatami.domain.model.PeriodFlow
-import com.mobile.tamatami.domain.model.Symptom
-import com.mobile.tamatami.domain.model.TamagotchiMood
-import com.mobile.tamatami.domain.nutrition.CravingHint
-import com.mobile.tamatami.domain.sleep.SleepRating
-import com.mobile.tamatami.domain.training.WorkoutIntensity
-import com.mobile.tamatami.domain.training.WorkoutType
-import com.mobile.tamatami.domain.medication.TimeOfDay
+import com.mobile.tamatami.db.CravingLog
+import com.mobile.tamatami.db.CycleEntry
+import com.mobile.tamatami.db.HormoneLog
+import com.mobile.tamatami.db.Medication
+import com.mobile.tamatami.db.MedicationIntake
+import com.mobile.tamatami.db.MoodLog
+import com.mobile.tamatami.db.PeriodDay
+import com.mobile.tamatami.db.SleepLog
+import com.mobile.tamatami.db.SymptomLog
+import com.mobile.tamatami.db.TamagotchiState
+import com.mobile.tamatami.db.UserProfile
+import com.mobile.tamatami.db.WaterLog
+import com.mobile.tamatami.db.WorkoutLog
 import kotlinx.serialization.Serializable
-import java.time.Instant
-import java.time.LocalDate
 
 /**
  * The on-file backup format. A single versioned envelope carrying one list per
- * Room table. DTOs use only primitives — dates as epoch-day / epoch-milli
+ * table. DTOs use only primitives — dates as epoch-day / epoch-milli
  * [Long], enums as their `.name` [String] — so the JSON is stable and readable
- * regardless of how Room stores things internally, and never depends on the
- * entity classes being serializable.
+ * regardless of how the DB stores things internally, and never depends on the
+ * generated row classes being serializable.
  *
  * Bump [BACKUP_VERSION] on any breaking format change and handle older files in
  * [BackupRepository.import] if backward compatibility is ever needed.
@@ -179,135 +168,46 @@ data class MedicationIntakeDto(
     val slot: String,
 )
 
-// ----------------------------------------------------- entity <-> DTO mapping
-// Kept next to the DTOs so the round-trip is defined in one place. Enum parsing
-// uses valueOf, matching the app's Room TypeConverters.
+// ----------------------------------------------------- row -> DTO mapping
+// Kept next to the DTOs so the export shape is defined in one place. Enum
+// values are stored as their `.name` string. Dates/instants use kotlinx.datetime
+// epoch conversions. The reverse (DTO -> row) is done inline in BackupRepository,
+// which repopulates via the generated insert/upsert query functions.
 
-fun UserProfileEntity.toDto() = UserProfileDto(
-    id, tamaName, lastPeriodStart.toEpochDay(), avgCycleLengthDays, avgPeriodLengthDays,
-    tryingToConceive, onContraception, irregularCycles, onboardingComplete, createdAt.toEpochMilli(),
+fun UserProfile.toDto() = UserProfileDto(
+    id, tamaName, lastPeriodStart.toEpochDays().toLong(), avgCycleLengthDays, avgPeriodLengthDays,
+    tryingToConceive, onContraception, irregularCycles, onboardingComplete, createdAt.toEpochMilliseconds(),
     dailyStepsGoal, sleepGoalMinutes, waterGoalGlasses,
 )
 
-fun UserProfileDto.toEntity() = UserProfileEntity(
-    id = id,
-    tamaName = tamaName,
-    lastPeriodStart = LocalDate.ofEpochDay(lastPeriodStartEpochDay),
-    avgCycleLengthDays = avgCycleLengthDays,
-    avgPeriodLengthDays = avgPeriodLengthDays,
-    tryingToConceive = tryingToConceive,
-    onContraception = onContraception,
-    irregularCycles = irregularCycles,
-    onboardingComplete = onboardingComplete,
-    createdAt = Instant.ofEpochMilli(createdAtEpochMs),
-    dailyStepsGoal = dailyStepsGoal,
-    sleepGoalMinutes = sleepGoalMinutes,
-    waterGoalGlasses = waterGoalGlasses,
+fun TamagotchiState.toDto() = TamagotchiStateDto(id, lastMood.name, hatched, accessoriesJson)
+
+fun CycleEntry.toDto() = CycleEntryDto(
+    id, startDate.toEpochDays().toLong(), endDate?.toEpochDays()?.toLong(), lengthDays,
 )
 
-fun TamagotchiStateEntity.toDto() = TamagotchiStateDto(id, lastMood.name, hatched, accessoriesJson)
-fun TamagotchiStateDto.toEntity() = TamagotchiStateEntity(
-    id = id,
-    lastMood = TamagotchiMood.valueOf(lastMood),
-    hatched = hatched,
-    accessoriesJson = accessoriesJson,
+fun PeriodDay.toDto() = PeriodDayDto(id, date.toEpochDays().toLong(), flow.name)
+
+fun MoodLog.toDto() = MoodLogDto(id, date.toEpochDays().toLong(), mood.name, energy, notes)
+
+fun WaterLog.toDto() = WaterLogDto(id, date.toEpochDays().toLong(), glasses, goal)
+
+fun HormoneLog.toDto() = HormoneLogDto(id, date.toEpochDays().toLong(), hormone, value_, unit, notes)
+
+fun WorkoutLog.toDto() = WorkoutLogDto(
+    id, date.toEpochDays().toLong(), type.name, durationMinutes, intensity.name, notes,
 )
 
-fun CycleEntryEntity.toDto() = CycleEntryDto(id, startDate.toEpochDay(), endDate?.toEpochDay(), lengthDays)
-fun CycleEntryDto.toEntity() = CycleEntryEntity(
-    id = id,
-    startDate = LocalDate.ofEpochDay(startDateEpochDay),
-    endDate = endDateEpochDay?.let(LocalDate::ofEpochDay),
-    lengthDays = lengthDays,
+fun SymptomLog.toDto() = SymptomLogDto(date.toEpochDays().toLong(), symptom.name)
+
+fun CravingLog.toDto() = CravingLogDto(id, date.toEpochDays().toLong(), craving.name)
+
+fun SleepLog.toDto() = SleepLogDto(
+    id, date.toEpochDays().toLong(), bedMinuteOfDay, wakeMinuteOfDay, durationMinutes, rating.name,
 )
 
-fun PeriodDayEntity.toDto() = PeriodDayDto(id, date.toEpochDay(), flow.name)
-fun PeriodDayDto.toEntity() = PeriodDayEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    flow = PeriodFlow.valueOf(flow),
+fun Medication.toDto() = MedicationDto(
+    id, name, dosesPerDay, slotsMask, active, createdAt.toEpochMilliseconds(),
 )
 
-fun MoodLogEntity.toDto() = MoodLogDto(id, date.toEpochDay(), mood.name, energy, notes)
-fun MoodLogDto.toEntity() = MoodLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    mood = Mood.valueOf(mood),
-    energy = energy,
-    notes = notes,
-)
-
-fun WaterLogEntity.toDto() = WaterLogDto(id, date.toEpochDay(), glasses, goal)
-fun WaterLogDto.toEntity() = WaterLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    glasses = glasses,
-    goal = goal,
-)
-
-fun HormoneLogEntity.toDto() = HormoneLogDto(id, date.toEpochDay(), hormone, value, unit, notes)
-fun HormoneLogDto.toEntity() = HormoneLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    hormone = hormone,
-    value = value,
-    unit = unit,
-    notes = notes,
-)
-
-fun WorkoutLogEntity.toDto() = WorkoutLogDto(
-    id, date.toEpochDay(), type.name, durationMinutes, intensity.name, notes,
-)
-fun WorkoutLogDto.toEntity() = WorkoutLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    type = WorkoutType.valueOf(type),
-    durationMinutes = durationMinutes,
-    intensity = WorkoutIntensity.valueOf(intensity),
-    notes = notes,
-)
-
-fun SymptomLogEntity.toDto() = SymptomLogDto(date.toEpochDay(), symptom.name)
-fun SymptomLogDto.toEntity() = SymptomLogEntity(
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    symptom = Symptom.valueOf(symptom),
-)
-
-fun CravingLogEntity.toDto() = CravingLogDto(id, date.toEpochDay(), craving.name)
-fun CravingLogDto.toEntity() = CravingLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    craving = CravingHint.valueOf(craving),
-)
-
-fun SleepLogEntity.toDto() = SleepLogDto(
-    id, date.toEpochDay(), bedMinuteOfDay, wakeMinuteOfDay, durationMinutes, rating.name,
-)
-fun SleepLogDto.toEntity() = SleepLogEntity(
-    id = id,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    bedMinuteOfDay = bedMinuteOfDay,
-    wakeMinuteOfDay = wakeMinuteOfDay,
-    durationMinutes = durationMinutes,
-    rating = SleepRating.valueOf(rating),
-)
-
-fun MedicationEntity.toDto() = MedicationDto(
-    id, name, dosesPerDay, slotsMask, active, createdAt.toEpochMilli(),
-)
-fun MedicationDto.toEntity() = MedicationEntity(
-    id = id,
-    name = name,
-    dosesPerDay = dosesPerDay,
-    slotsMask = slotsMask,
-    active = active,
-    createdAt = Instant.ofEpochMilli(createdAtEpochMs),
-)
-
-fun MedicationIntakeEntity.toDto() = MedicationIntakeDto(id, medicationId, date.toEpochDay(), slot.name)
-fun MedicationIntakeDto.toEntity() = MedicationIntakeEntity(
-    id = id,
-    medicationId = medicationId,
-    date = LocalDate.ofEpochDay(dateEpochDay),
-    slot = TimeOfDay.valueOf(slot),
-)
+fun MedicationIntake.toDto() = MedicationIntakeDto(id, medicationId, date.toEpochDays().toLong(), slot.name)

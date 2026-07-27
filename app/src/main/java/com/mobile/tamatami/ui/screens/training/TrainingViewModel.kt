@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaLocalDate
 
 class TrainingViewModel(
     private val userRepository: UserRepository,
@@ -82,7 +83,7 @@ class TrainingViewModel(
                 return@launch
             }
             stepsState.value = StepsUiState.Ready(count = null)
-            val count = runCatching { stepDataSource.stepsFor(today) }.getOrNull()
+            val count = runCatching { stepDataSource.stepsFor(today.toJavaLocalDate()) }.getOrNull()
             stepsState.value = StepsUiState.Ready(count = count)
         }
     }

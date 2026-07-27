@@ -1,22 +1,22 @@
 package com.mobile.tamatami.notifications
 
 import com.google.common.truth.Truth.assertThat
-import com.mobile.tamatami.data.db.entity.MedicationEntity
+import com.mobile.tamatami.db.Medication
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalTime
 import org.junit.Test
-import java.time.Instant
 
 class ReminderEvaluatorTest {
 
-    private fun med(id: Long, slots: Set<TimeOfDay>) = MedicationEntity(
+    private fun med(id: Long, slots: Set<TimeOfDay>) = Medication(
         id = id,
         name = "med$id",
         dosesPerDay = slots.size,
         slotsMask = MedicationSchedule.maskOf(slots),
         active = true,
-        createdAt = Instant.ofEpochMilli(0),
+        createdAt = Instant.fromEpochMilliseconds(0),
     )
 
     @Test

@@ -49,6 +49,8 @@ import com.mobile.tamatami.ui.theme.PhaseLuteal
 import com.mobile.tamatami.ui.theme.PhaseMenstrual
 import com.mobile.tamatami.ui.theme.PhaseOvulatory
 import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
+import java.time.YearMonth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +60,6 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
             userRepository = container.userRepository,
             cycleRepository = container.cycleRepository,
             dailyLogRepository = container.dailyLogRepository,
-            periodDayDao = container.periodDayDao,
             clock = container.clock,
         )
     )
@@ -88,13 +89,13 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
                 .verticalScroll(rememberScrollState()),
         ) {
             MonthHeader(
-                displayedMonth = state.displayedMonth,
+                displayedMonth = YearMonth.from(state.displayedMonth.toJavaLocalDate()),
                 onPrev = viewModel::goPrevMonth,
                 onNext = viewModel::goNextMonth,
             )
             MonthGrid(
                 days = state.days,
-                onDayClick = { viewModel.selectDate(it.date.toJavaLocalDate()) },
+                onDayClick = { viewModel.selectDate(it.date) },
             )
             Spacer(Modifier.height(16.dp))
             if (displayedDay != null && state.selectedDaySnapshot != null) {
@@ -134,7 +135,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
             date = displayedDay.date.toJavaLocalDate(),
             onDismiss = { logSheetOpen = false },
             onSave = { date, type, mins, intensity, notes ->
-                viewModel.logWorkout(date, type, mins, intensity, notes)
+                viewModel.logWorkout(date.toKotlinLocalDate(), type, mins, intensity, notes)
             },
         )
     }
