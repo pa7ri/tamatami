@@ -114,7 +114,22 @@ private struct DayDetail: View {
 
     private func flowLabel(_ f: PeriodFlow?) -> String {
         guard let f, f != .none else { return "none" }
-        return f.name.capitalized
+        return f.displayName
+    }
+}
+
+/// Readable label for a `PeriodFlow` enum bridged from Kotlin. Kotlin enums are
+/// not exhaustively switchable from Swift, so a `default` case is required.
+private extension PeriodFlow {
+    var displayName: String {
+        switch self {
+        case .none: return "None"
+        case .spotting: return "Spotting"
+        case .light: return "Light"
+        case .medium: return "Medium"
+        case .heavy: return "Heavy"
+        default: return "Unknown"
+        }
     }
 }
 

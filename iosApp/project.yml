@@ -1,0 +1,38 @@
+name: Tamatami
+
+options:
+  bundleIdPrefix: com.mobile
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+targets:
+  Tamatami:
+    type: application
+    platform: iOS
+    sources:
+      - path: Tamatami
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mobile.Tamatami
+        GENERATE_INFOPLIST_FILE: YES
+        # SwiftUI @main entry point (TamatamiApp.swift) — no UIKit AppDelegate.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"  # iPhone
+        # Link the Kotlin/Native static framework produced by :shared.
+        FRAMEWORK_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -framework
+          - Shared
+    # Build + embed the right Shared.framework slice before compiling Swift.
+    preBuildScripts:
+      - name: "Build Shared.framework (Kotlin/Native)"
+        basedOnDependencyAnalysis: false
+        script: |
+          cd "$SRCROOT/.."
+          if [ "$CONFIGURATION" = "Release" ]; then KFBT=release; else KFBT=debug; fi
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode -PKOTLIN_FRAMEWORK_BUILD_TYPE=$KFBT
