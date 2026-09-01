@@ -45,6 +45,7 @@ struct OnboardingFlow: View {
                 }
             }
             .navigationTitle("Welcome")
+            .igListBackground()
         }
     }
 

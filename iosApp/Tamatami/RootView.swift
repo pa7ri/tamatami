@@ -29,16 +29,12 @@ private struct MainTabs: View {
         TabView {
             HomeScreen()
                 .tabItem { Label("Home", systemImage: "house") }
-            CalendarScreen()
-                .tabItem { Label("Calendar", systemImage: "calendar") }
             TrainingScreen()
                 .tabItem { Label("Training", systemImage: "figure.run") }
-            CycleInfoScreen()
-                .tabItem { Label("Cycle", systemImage: "heart") }
-            NutritionScreen()
-                .tabItem { Label("Food", systemImage: "fork.knife") }
-            MedicationScreen()
-                .tabItem { Label("Meds", systemImage: "pills") }
+            GuideScreen()
+                .tabItem { Label("Cycle", systemImage: "sparkles") }
+            HealthScreen()
+                .tabItem { Label("Health", systemImage: "stethoscope") }
         }
     }
 }

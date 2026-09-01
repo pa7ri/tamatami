@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.mobile.tamatami.db.Medication
 import com.mobile.tamatami.db.TamatamiDb
+import com.mobile.tamatami.domain.medication.MedicationFrequency
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
 import kotlinx.coroutines.CoroutineDispatcher
@@ -13,12 +14,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 /** A medication plus the slots already taken for a given day. */
 data class MedicationToday(
     val medication: Medication,
     val scheduledSlots: Set<TimeOfDay>,
     val takenSlots: Set<TimeOfDay>,
+    val frequency: MedicationFrequency,
+    /** Whether a dose is due on the day this snapshot is for. */
+    val dueToday: Boolean,
 ) {
     val adherence get() = MedicationSchedule.adherence(scheduledSlots, takenSlots)
 }
@@ -42,12 +48,16 @@ class MedicationRepository(
             db.medicationIntakeQueries.observeByDate(date).asFlow().mapToList(dispatcher),
         ) { meds, intakes ->
             meds.map { med ->
+                val frequency = MedicationFrequency.decode(med.frequencyKind, med.frequencyValue)
+                val createdDate = med.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date
                 MedicationToday(
                     medication = med,
                     scheduledSlots = MedicationSchedule.slotsOf(med.slotsMask),
                     takenSlots = intakes
                         .filter { it.medicationId == med.id }
                         .mapTo(mutableSetOf()) { it.slot },
+                    frequency = frequency,
+                    dueToday = frequency.isDueOn(date, createdDate),
                 )
             }
         }
@@ -63,7 +73,13 @@ class MedicationRepository(
                 .mapTo(mutableSetOf()) { it.slot }
         }
 
-    suspend fun addMedication(name: String, dosesPerDay: Int, slots: Set<TimeOfDay>, now: Instant) {
+    suspend fun addMedication(
+        name: String,
+        dosesPerDay: Int,
+        slots: Set<TimeOfDay>,
+        frequency: MedicationFrequency,
+        now: Instant,
+    ) {
         withContext(dispatcher) {
             db.medicationQueries.insert(
                 name = name,
@@ -71,6 +87,8 @@ class MedicationRepository(
                 slotsMask = MedicationSchedule.maskOf(slots),
                 active = true,
                 createdAt = now,
+                frequencyKind = frequency.kind.ordinal,
+                frequencyValue = frequency.value,
             )
         }
     }
@@ -84,6 +102,8 @@ class MedicationRepository(
                 slotsMask = medication.slotsMask,
                 active = medication.active,
                 createdAt = medication.createdAt,
+                frequencyKind = medication.frequencyKind,
+                frequencyValue = medication.frequencyValue,
             )
         }
     }

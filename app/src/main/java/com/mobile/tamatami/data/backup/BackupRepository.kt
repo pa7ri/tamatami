@@ -198,6 +198,8 @@ class BackupRepository(
                     slotsMask = dto.slotsMask,
                     active = dto.active,
                     createdAt = Instant.fromEpochMilliseconds(dto.createdAtEpochMs),
+                    frequencyKind = dto.frequencyKind,
+                    frequencyValue = dto.frequencyValue,
                 )
             }
 

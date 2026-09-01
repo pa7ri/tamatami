@@ -1,4 +1,4 @@
-package com.mobile.tamatami.ui.screens.calendar
+package com.mobile.tamatami.ui.screens.calendar.sections
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -6,23 +6,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,13 +33,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
-import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.components.TamatamiScaffold
-import com.mobile.tamatami.ui.screens.calendar.sections.DayStatusCard
-import com.mobile.tamatami.ui.screens.calendar.sections.MonthGrid
-import com.mobile.tamatami.ui.screens.calendar.sections.MonthHeader
+import com.mobile.tamatami.ui.screens.calendar.CalendarViewModel
 import com.mobile.tamatami.ui.screens.training.sections.LogWorkoutSheet
 import com.mobile.tamatami.ui.theme.PhaseFollicular
 import com.mobile.tamatami.ui.theme.PhaseLuteal
@@ -52,9 +44,16 @@ import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import java.time.YearMonth
 
+/**
+ * The calendar as an embeddable section — month grid + selected-day card, with
+ * an inline "Legend" button (there's no per-section app bar when embedded in
+ * Home). Renders as a plain [Column] with no scaffold and no internal scroll,
+ * so it can be dropped into a host `LazyColumn` `item {}` (Home) that owns
+ * scrolling. Instantiates its own [CalendarViewModel].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(navController: NavHostController, container: AppContainer) {
+fun CalendarContent(container: AppContainer, modifier: Modifier = Modifier) {
     val viewModel: CalendarViewModel = viewModel(
         factory = CalendarViewModel.Factory(
             userRepository = container.userRepository,
@@ -64,55 +63,51 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
         )
     )
     val state by viewModel.state.collectAsState()
-    // Day card defaults to today when nothing is explicitly selected — the
-    // space under the grid is never empty.
     val displayedDay = state.selectedDate?.let { sel -> state.days.firstOrNull { it.date == sel } }
         ?: state.days.firstOrNull { it.isToday }
 
     var showLegend by remember { mutableStateOf(false) }
     var logSheetOpen by remember { mutableStateOf(false) }
 
-    TamatamiScaffold(
-        title = "Calendar",
-        bottomBar = { TamatamiBottomBar(navController) },
-        actions = {
-            IconButton(onClick = { showLegend = true }) {
-                Icon(Icons.Outlined.Info, contentDescription = "Calendar legend")
-            }
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            MonthHeader(
-                displayedMonth = YearMonth.from(state.displayedMonth.toJavaLocalDate()),
-                onPrev = viewModel::goPrevMonth,
-                onNext = viewModel::goNextMonth,
+            Text(
+                "Calendar",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
             )
-            MonthGrid(
-                days = state.days,
-                onDayClick = { viewModel.selectDate(it.date) },
-            )
-            Spacer(Modifier.height(16.dp))
-            if (displayedDay != null && state.selectedDaySnapshot != null) {
-                DayStatusCard(
-                    day = displayedDay,
-                    snapshot = state.selectedDaySnapshot!!,
-                    cycle = state.cycle,
-                    onFlow = viewModel::setFlow,
-                    onMood = viewModel::setMood,
-                    onEnergy = viewModel::setEnergy,
-                    onToggleSymptom = viewModel::toggleSymptom,
-                    onWater = viewModel::setWater,
-                    onCraving = viewModel::setCraving,
-                    onAddSession = { logSheetOpen = true },
-                )
+            TextButton(onClick = { showLegend = true }) {
+                Icon(Icons.Outlined.Info, contentDescription = null)
+                Spacer(Modifier.size(4.dp))
+                Text("Legend")
             }
-            Spacer(Modifier.height(16.dp))
+        }
+        MonthHeader(
+            displayedMonth = YearMonth.from(state.displayedMonth.toJavaLocalDate()),
+            onPrev = viewModel::goPrevMonth,
+            onNext = viewModel::goNextMonth,
+        )
+        MonthGrid(
+            days = state.days,
+            onDayClick = { viewModel.selectDate(it.date) },
+        )
+        Spacer(Modifier.height(16.dp))
+        if (displayedDay != null && state.selectedDaySnapshot != null) {
+            DayStatusCard(
+                day = displayedDay,
+                snapshot = state.selectedDaySnapshot!!,
+                cycle = state.cycle,
+                onFlow = viewModel::setFlow,
+                onMood = viewModel::setMood,
+                onEnergy = viewModel::setEnergy,
+                onToggleSymptom = viewModel::toggleSymptom,
+                onWater = viewModel::setWater,
+                onCraving = viewModel::setCraving,
+                onAddSession = { logSheetOpen = true },
+            )
         }
     }
 
@@ -127,9 +122,7 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
         }
     }
 
-    // Log a training session against the day the card is currently showing —
-    // the selected day, or today when nothing is selected. Reuses the same
-    // sheet as the Training screen; the date is what makes it per-day.
+    // Log a training session against the day the card is currently showing.
     if (logSheetOpen && displayedDay != null) {
         LogWorkoutSheet(
             date = displayedDay.date.toJavaLocalDate(),

@@ -13,14 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MonitorHeart
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,7 +38,7 @@ import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.nav.TamatamiRoute
+import com.mobile.tamatami.ui.screens.calendar.sections.CalendarContent
 import com.mobile.tamatami.ui.screens.home.sections.CycleStatusSection
 import com.mobile.tamatami.ui.screens.home.sections.NextPeriodSection
 import com.mobile.tamatami.ui.screens.home.sections.QuickLogSection
@@ -70,14 +65,6 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Hi, ${state.tamaName} 👋") },
-                actions = {
-                    IconButton(onClick = { navController.navigate(TamatamiRoute.Hormones) }) {
-                        Icon(Icons.Outlined.MonitorHeart, contentDescription = "Hormones")
-                    }
-                    IconButton(onClick = { navController.navigate(TamatamiRoute.Settings) }) {
-                        Icon(Icons.Outlined.Settings, contentDescription = "Settings")
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                 ),
@@ -105,6 +92,7 @@ fun HomeScreen(
                     onFlowSelected = viewModel::setFlow,
                 )
             }
+            item { CalendarContent(container) }
             item { Spacer(Modifier.height(24.dp)) }
         }
     }

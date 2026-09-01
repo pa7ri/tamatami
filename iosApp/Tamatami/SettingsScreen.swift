@@ -38,6 +38,7 @@ struct SettingsScreen: View {
             }
         }
         .navigationTitle("Settings")
+        .igListBackground()
         .onAppear { Task { await model.load(sdk: app.sdk) } }
     }
 }

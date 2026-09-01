@@ -1,10 +1,14 @@
 package com.mobile.tamatami.notifications
 
 import com.mobile.tamatami.db.Medication
+import com.mobile.tamatami.domain.medication.MedicationFrequency
 import com.mobile.tamatami.domain.medication.MedicationSchedule
 import com.mobile.tamatami.domain.medication.TimeOfDay
 import com.mobile.tamatami.domain.reminders.ReminderLogic
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * Pure orchestration for the reminder worker: given the day's already-read
@@ -31,6 +35,8 @@ object ReminderEvaluator {
      * @param remindPeriod whether period reminders are enabled by the user.
      * @param remindWater whether water reminders are enabled by the user.
      * @param remindPills whether medication reminders are enabled by the user.
+     * @param today the current date, used to skip meds not due today per their
+     *   frequency (null = consider every active med due, the pre-frequency behaviour).
      */
     fun evaluate(
         daysUntilNextPeriod: Int?,
@@ -42,6 +48,7 @@ object ReminderEvaluator {
         remindPeriod: Boolean = true,
         remindWater: Boolean = true,
         remindPills: Boolean = true,
+        today: LocalDate? = null,
     ): Decision {
         val slot = ReminderLogic.currentPillSlot(now)
         val pillSlots = if (!remindPills || slot == null) {
@@ -49,6 +56,11 @@ object ReminderEvaluator {
         } else {
             activeMeds
                 .filter { slot in MedicationSchedule.slotsOf(it.slotsMask) }
+                .filter { med ->
+                    today == null || MedicationFrequency
+                        .decode(med.frequencyKind, med.frequencyValue)
+                        .isDueOn(today, med.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date)
+                }
                 .filter { slot !in (takenByMed[it.id] ?: emptySet()) }
                 .associate { it.id to slot }
         }

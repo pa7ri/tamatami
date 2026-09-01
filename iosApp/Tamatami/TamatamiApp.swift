@@ -7,10 +7,17 @@ import SwiftUI
 struct TamatamiApp: App {
     @StateObject private var appState = AppState()
 
+    init() {
+        // Instagram-style opaque black nav/tab bars, applied once at launch.
+        IGAppearance.apply()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
+                .preferredColorScheme(.dark) // Unify on the IG dark theme app-wide.
+                .tint(.white)
                 .task {
                     await appState.requestNotificationPermission()
                 }

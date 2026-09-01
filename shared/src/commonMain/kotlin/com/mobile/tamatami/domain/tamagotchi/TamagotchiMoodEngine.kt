@@ -6,6 +6,7 @@ import com.mobile.tamatami.domain.model.CycleSnapshot
 import com.mobile.tamatami.domain.model.DailySnapshot
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.domain.model.TamaExpression
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.model.TamagotchiState
 
@@ -26,6 +27,10 @@ import com.mobile.tamatami.domain.model.TamagotchiState
  *   >= 4 GLOWING ; 2..3 HAPPY ; 0..1 CONTENT ; −1..−2 NEUTRAL ; <= −3 SAD.
  *
  *   GLOWING gets a brisk 1.4 Hz bounce; everyone else 0.6 Hz.
+ *
+ * The animated [TamaExpression] (one Lottie per value) is then picked by a
+ * priority ladder over the same signals — the most salient need wins:
+ *   thirsty > sleepy > romantic > sad/tired > moody > happy > greeting.
  */
 object TamagotchiMoodEngine {
 
@@ -87,10 +92,38 @@ object TamagotchiMoodEngine {
             else -> TamagotchiMood.SAD
         }
 
+        val expression = deriveExpression(mood, accessories, cycle, daily)
+
         return TamagotchiState(
             mood = mood,
             accessories = accessories.toSet(),
             bounceHz = if (mood == TamagotchiMood.GLOWING) 1.4f else 0.6f,
+            expression = expression,
         )
+    }
+
+    /**
+     * Picks the animated expression from the strongest active signal. Order
+     * matters: an acute need (thirst) outranks a lasting vibe (moody).
+     */
+    private fun deriveExpression(
+        mood: TamagotchiMood,
+        accessories: Set<Accessory>,
+        cycle: CycleSnapshot,
+        daily: DailySnapshot,
+    ): TamaExpression {
+        val romanticVibe = Accessory.HEART in accessories ||
+            Accessory.SPARKLE in accessories ||
+            (cycle.phase == CyclePhase.OVULATORY &&
+                (daily.mood == Mood.GREAT || daily.mood == Mood.GOOD))
+        return when {
+            Accessory.THIRSTY_DROPLET in accessories -> TamaExpression.THIRSTY
+            Accessory.TIRED_ZZZ in accessories -> TamaExpression.SLEEPY
+            romanticVibe -> TamaExpression.ROMANTIC
+            mood == TamagotchiMood.SAD -> TamaExpression.SAD_TIRED
+            mood == TamagotchiMood.NEUTRAL -> TamaExpression.MOODY
+            mood == TamagotchiMood.HAPPY || mood == TamagotchiMood.GLOWING -> TamaExpression.HAPPY
+            else -> TamaExpression.GREETING
+        }
     }
 }

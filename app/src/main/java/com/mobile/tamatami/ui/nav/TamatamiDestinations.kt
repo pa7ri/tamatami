@@ -1,11 +1,11 @@
 package com.mobile.tamatami.ui.nav
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.LocalDining
+import androidx.compose.material.icons.outlined.MonitorHeart
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 
@@ -13,12 +13,9 @@ import kotlinx.serialization.Serializable
 sealed interface TamatamiRoute {
     @Serializable data object OnboardingGraph : TamatamiRoute
     @Serializable data object Home : TamatamiRoute
-    @Serializable data object Calendar : TamatamiRoute
     @Serializable data object Training : TamatamiRoute
     @Serializable data object CycleInfo : TamatamiRoute
-    @Serializable data object Nutrition : TamatamiRoute
-    @Serializable data object Hormones : TamatamiRoute
-    @Serializable data object Pills : TamatamiRoute
+    @Serializable data object Health : TamatamiRoute
     @Serializable data object Settings : TamatamiRoute
 
     // Onboarding step destinations -------------------------------------------
@@ -38,14 +35,16 @@ data class BottomNavItem(
 )
 
 /**
- * Bottom nav, in display order. Material 3 caps this at 5 items. Hormones is
- * reachable from Home's TopAppBar action and from a Cycle-info link row;
- * Settings is reachable from Home's TopAppBar action.
+ * Bottom nav, in display order — Material 3 caps this at 5 items.
+ *
+ * The Cycle tab hosts a Cycle-info / Nutrition sub-tab switch; the Health tab
+ * hosts a Hormones / Medication sub-tab switch. The calendar lives at the bottom
+ * of Home. Settings is a first-class tab.
  */
 val BottomNavItems: List<BottomNavItem> = listOf(
     BottomNavItem(TamatamiRoute.Home, "Home", Icons.Outlined.Home),
-    BottomNavItem(TamatamiRoute.Calendar, "Calendar", Icons.Outlined.CalendarMonth),
-    BottomNavItem(TamatamiRoute.Training, "Training", Icons.Outlined.FitnessCenter),
     BottomNavItem(TamatamiRoute.CycleInfo, "Cycle", Icons.Outlined.Favorite),
-    BottomNavItem(TamatamiRoute.Nutrition, "Nutrition", Icons.Outlined.LocalDining),
+    BottomNavItem(TamatamiRoute.Training, "Training", Icons.Outlined.FitnessCenter),
+    BottomNavItem(TamatamiRoute.Health, "Health", Icons.Outlined.MonitorHeart),
+    BottomNavItem(TamatamiRoute.Settings, "Settings", Icons.Outlined.Settings),
 )

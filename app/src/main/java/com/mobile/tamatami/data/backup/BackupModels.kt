@@ -158,6 +158,8 @@ data class MedicationDto(
     val slotsMask: Int,
     val active: Boolean,
     val createdAtEpochMs: Long,
+    val frequencyKind: Int = 0,
+    val frequencyValue: Int = 0,
 )
 
 @Serializable
@@ -208,6 +210,7 @@ fun SleepLog.toDto() = SleepLogDto(
 
 fun Medication.toDto() = MedicationDto(
     id, name, dosesPerDay, slotsMask, active, createdAt.toEpochMilliseconds(),
+    frequencyKind, frequencyValue,
 )
 
 fun MedicationIntake.toDto() = MedicationIntakeDto(id, medicationId, date.toEpochDays().toLong(), slot.name)

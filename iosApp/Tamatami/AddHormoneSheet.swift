@@ -1,3 +1,4 @@
+
 import SwiftUI
 import Shared
 
@@ -41,6 +42,7 @@ struct AddHormoneSheet: View {
                 }
             }
             .navigationTitle("Add reading")
+            .igListBackground()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

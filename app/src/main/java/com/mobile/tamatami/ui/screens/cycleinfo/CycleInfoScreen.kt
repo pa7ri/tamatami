@@ -1,7 +1,6 @@
 package com.mobile.tamatami.ui.screens.cycleinfo
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Medication
-import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -39,12 +37,48 @@ import com.mobile.tamatami.domain.cycle.guideFor
 import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
-import com.mobile.tamatami.ui.nav.TamatamiRoute
 import com.mobile.tamatami.ui.screens.home.displayName
+import com.mobile.tamatami.ui.screens.nutrition.NutritionContent
 import com.mobile.tamatami.ui.theme.phaseBrush
 
+/**
+ * The "Cycle" tab: a two-way sub-tab switch between phase guidance ("Cycle info")
+ * and phase-aware food suggestions ("Nutrition"). Hosts the single scaffold and
+ * bottom bar; each sub-tab renders its own content composable.
+ */
 @Composable
 fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
+    var subTab by remember { mutableIntStateOf(0) }
+    val subTabs = listOf("Cycle info", "Nutrition")
+
+    TamatamiScaffold(
+        title = "Cycle",
+        bottomBar = { TamatamiBottomBar(navController) },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            TabRow(selectedTabIndex = subTab) {
+                subTabs.forEachIndexed { index, label ->
+                    Tab(
+                        selected = index == subTab,
+                        onClick = { subTab = index },
+                        text = { Text(label) },
+                    )
+                }
+            }
+            when (subTab) {
+                0 -> CycleInfoContent(container)
+                else -> NutritionContent(navController, container)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CycleInfoContent(container: AppContainer) {
     val viewModel: CycleInfoViewModel = viewModel(
         factory = CycleInfoViewModel.Factory(
             cycleRepository = container.cycleRepository,
@@ -61,109 +95,74 @@ fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
     val selectedIndex = phases.indexOf(state.selectedPhase).coerceAtLeast(0)
     val guide = guideFor(state.selectedPhase)
 
-    TamatamiScaffold(
-        title = "Cycle info",
-        bottomBar = { TamatamiBottomBar(navController) },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(phaseBrush(state.selectedPhase))
-                        .padding(24.dp),
-                ) {
-                    Column {
-                        Text(
-                            text = state.selectedPhase.displayName(),
-                            color = Color.White,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = guide.headline,
-                            color = Color.White.copy(alpha = 0.9f),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        if (state.selectedPhase == state.currentPhase &&
-                            state.currentPhase != CyclePhase.UNKNOWN) {
-                            Spacer(Modifier.height(8.dp))
-                            Surface(
-                                color = Color.White.copy(alpha = 0.22f),
-                                shape = RoundedCornerShape(50),
-                            ) {
-                                Text(
-                                    text = "You're on day ${state.cycle.cycleDay} of ${state.cycle.cycleLength}",
-                                    color = Color.White,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                )
-                            }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(phaseBrush(state.selectedPhase))
+                    .padding(24.dp),
+            ) {
+                Column {
+                    Text(
+                        text = state.selectedPhase.displayName(),
+                        color = Color.White,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = guide.headline,
+                        color = Color.White.copy(alpha = 0.9f),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    if (state.selectedPhase == state.currentPhase &&
+                        state.currentPhase != CyclePhase.UNKNOWN) {
+                        Spacer(Modifier.height(8.dp))
+                        Surface(
+                            color = Color.White.copy(alpha = 0.22f),
+                            shape = RoundedCornerShape(50),
+                        ) {
+                            Text(
+                                text = "You're on day ${state.cycle.cycleDay} of ${state.cycle.cycleLength}",
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            )
                         }
                     }
                 }
             }
-            item {
-                ScrollableTabRow(
-                    selectedTabIndex = selectedIndex,
-                    edgePadding = 16.dp,
-                ) {
-                    phases.forEachIndexed { index, phase ->
-                        Tab(
-                            selected = index == selectedIndex,
-                            onClick = { viewModel.selectPhase(phase) },
-                            text = { Text(phase.displayName()) },
-                        )
-                    }
-                }
-            }
-            item { Section("What's happening", guide.body) }
-            item { Section("Energy expectation", guide.energyExpectation) }
-            if (guide.bodyChanges.isNotEmpty()) {
-                item { BulletSection("Body changes", guide.bodyChanges) }
-            }
-            item { Section("Mood tendency", guide.moodTendency) }
-            if (guide.practicalTips.isNotEmpty()) {
-                item { BulletSection("Practical tips", guide.practicalTips) }
-            }
-            item { Section("What your Tama feels", guide.tamaNote) }
-            item {
-                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                    ListItem(
-                        headlineContent = { Text("Log hormone readings") },
-                        supportingContent = { Text("Track estradiol, progesterone, LH, FSH, TSH") },
-                        leadingContent = {
-                            Icon(Icons.Outlined.MonitorHeart, contentDescription = null)
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate(TamatamiRoute.Hormones)
-                        },
-                    )
-                }
-            }
-            item {
-                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                    ListItem(
-                        headlineContent = { Text("Track medication") },
-                        supportingContent = { Text("Pill, birth control, or daily supplements") },
-                        leadingContent = {
-                            Icon(Icons.Outlined.Medication, contentDescription = null)
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate(TamatamiRoute.Pills)
-                        },
-                    )
-                }
-            }
-            item { Spacer(Modifier.height(24.dp)) }
         }
+        item {
+            ScrollableTabRow(
+                selectedTabIndex = selectedIndex,
+                edgePadding = 16.dp,
+            ) {
+                phases.forEachIndexed { index, phase ->
+                    Tab(
+                        selected = index == selectedIndex,
+                        onClick = { viewModel.selectPhase(phase) },
+                        text = { Text(phase.displayName()) },
+                    )
+                }
+            }
+        }
+        item { Section("What's happening", guide.body) }
+        item { Section("Energy expectation", guide.energyExpectation) }
+        if (guide.bodyChanges.isNotEmpty()) {
+            item { BulletSection("Body changes", guide.bodyChanges) }
+        }
+        item { Section("Mood tendency", guide.moodTendency) }
+        if (guide.practicalTips.isNotEmpty()) {
+            item { BulletSection("Practical tips", guide.practicalTips) }
+        }
+        item { Section("What your Tama feels", guide.tamaNote) }
+        item { Spacer(Modifier.height(24.dp)) }
     }
 }
 

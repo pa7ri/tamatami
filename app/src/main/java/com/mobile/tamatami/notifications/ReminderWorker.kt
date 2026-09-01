@@ -58,6 +58,7 @@ class ReminderWorker(
             remindPeriod = profile?.remindPeriodEnabled ?: true,
             remindWater = profile?.remindWaterEnabled ?: true,
             remindPills = profile?.remindPillsEnabled ?: true,
+            today = today,
         )
 
         val notifier = container.notifier

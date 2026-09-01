@@ -55,8 +55,8 @@ first segment: `WALK` → `.walk`, `THYROID_TSH` → `.thyroidTsh`) plus `entrie
 and a bridged `name: String`. They are **not** exhaustively switchable from
 Swift — every `switch` over one needs a `default:`.
 
-- `PeriodFlow` has **no** label property → Swift extension `displayName` in
-  `CalendarScreen.swift`.
+- `PeriodFlow` has **no** label property → labeled inline in `HomeScreen.swift`
+  (`DayDetail.flowLabel`).
 - `HormoneMarker` and `TimeOfDay` **do** expose a real Kotlin `displayName`
   property — use it directly (`marker.displayName`, `slot.displayName`).
 - `WorkoutType` / `WorkoutIntensity` / `TamagotchiMood` use `.name.capitalized`
@@ -87,3 +87,14 @@ go through `FlowObserver(flow:).watch { }` wrapped by `FlowWatcher`.
 
 SQLDelight row property `value` bridges as `value_` (trailing underscore) —
 `HormoneLog.value_`.
+
+## Tamagotchi avatar → Lottie (`TamaExpression`)
+
+`TamagotchiState` carries a derived `expression: TamaExpression` (7 cases). It
+bridges **unsuffixed** as Swift enum `TamaExpression` with camelCased cases
+(`.greeting`, `.happy`, `.sadTired`, `.moody`, `.romantic`, `.sleepy`, `.thirsty`).
+`TamagotchiAvatar.swift` maps each to a bundled Lottie file (`Animations/<name>.json`)
+via `assetName(_:)` and renders `LottieView(animation: .named(name)).resizable().looping()`
+(note: `.playing()` plays **once** — use `.looping()`). Keep the filename map in
+sync with Android's `assetFor()` and the files under `iosApp/Tamatami/Animations/`.
+The current files are placeholders — replace them in place with the real exports.

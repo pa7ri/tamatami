@@ -10,13 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,8 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.hormones.HormoneMarker
-import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.hormones.sections.AddEntrySheet
 import com.mobile.tamatami.ui.screens.hormones.sections.HormoneChart
 import kotlinx.datetime.toJavaLocalDate
@@ -42,10 +36,16 @@ import java.time.format.DateTimeFormatter
 
 private val dateHeader: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d")
 
+/**
+ * Hormone-tracking content — trend chart, marker picker, and a datewise log of
+ * readings. Rendered as a sub-tab inside the Health tab
+ * ([com.mobile.tamatami.ui.screens.health.HealthScreen]), so it carries no
+ * scaffold/bottom bar of its own.
+ */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class,
        androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun HormonesScreen(navController: NavHostController, container: AppContainer) {
+fun HormonesContent(navController: NavHostController, container: AppContainer) {
     val viewModel: HormonesViewModel = viewModel(
         factory = HormonesViewModel.Factory(
             hormoneRepository = container.hormoneRepository,
@@ -56,24 +56,10 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
     var sheetOpen by remember { mutableStateOf(false) }
     val today = container.clock.today()
 
-    TamatamiScaffold(
-        title = "Hormones",
-        bottomBar = { TamatamiBottomBar(navController) },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                )
-            }
-        },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
             item {
                 Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -181,7 +167,6 @@ fun HormonesScreen(navController: NavHostController, container: AppContainer) {
             }
             item { Spacer(Modifier.height(24.dp)) }
         }
-    }
 
     if (sheetOpen) {
         AddEntrySheet(

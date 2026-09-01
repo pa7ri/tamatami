@@ -37,7 +37,8 @@ final class NotificationScheduler {
             takenByMed: [:],
             remindPeriod: profile?.remindPeriodEnabled ?? true,
             remindWater: profile?.remindWaterEnabled ?? false,
-            remindPills: profile?.remindPillsEnabled ?? true
+            remindPills: profile?.remindPillsEnabled ?? true,
+            today: nil
         )
 
         if decision.period {
