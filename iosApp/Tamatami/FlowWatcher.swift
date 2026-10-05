@@ -8,7 +8,7 @@ import Shared
 /// The Kotlin side (`com.mobile.tamatami.ios.FlowObserver`) already hops to the
 /// main dispatcher, so callbacks are safe to use for SwiftUI state updates.
 final class FlowWatcher<T: AnyObject> {
-    private var cancellable: Cancellable?
+    private var cancellable: FlowCancellable?
 
     /// - Parameters:
     ///   - flow: any Kotlin `Flow<T>` (e.g. `sdk.medication.observeToday(date:)`).

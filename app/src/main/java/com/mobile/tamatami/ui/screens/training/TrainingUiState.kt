@@ -54,6 +54,7 @@ fun WorkoutType.displayName(): String = when (this) {
     WorkoutType.CARDIO -> "Cardio"
     WorkoutType.HIIT -> "HIIT"
     WorkoutType.OTHER -> "Other"
+    else -> name.lowercase().replaceFirstChar { it.uppercase() }
 }
 
 fun WorkoutIntensity.displayName(): String = when (this) {

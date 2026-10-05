@@ -55,6 +55,8 @@ object DatabaseFactory {
                 dosesPerDayAdapter = intAdapter,
                 slotsMaskAdapter = intAdapter,
                 createdAtAdapter = instantAdapter,
+                frequencyKindAdapter = intAdapter,
+                frequencyValueAdapter = intAdapter,
             ),
             medicationIntakeAdapter = MedicationIntake.Adapter(
                 idAdapter = longAdapter,

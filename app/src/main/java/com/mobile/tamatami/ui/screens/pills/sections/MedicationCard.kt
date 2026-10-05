@@ -50,10 +50,15 @@ fun MedicationCard(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = if (adherence.complete) {
-                            "All done for today ✓"
-                        } else {
-                            "${adherence.taken}/${adherence.expected} taken today"
+                        text = med.frequency.summary(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = when {
+                            !med.dueToday -> "Not scheduled today"
+                            adherence.complete -> "All done for today ✓"
+                            else -> "${adherence.taken}/${adherence.expected} taken today"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

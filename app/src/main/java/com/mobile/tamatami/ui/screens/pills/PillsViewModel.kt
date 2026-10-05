@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mobile.tamatami.data.repository.MedicationRepository
+import com.mobile.tamatami.domain.medication.MedicationFrequency
 import com.mobile.tamatami.domain.medication.TimeOfDay
 import com.mobile.tamatami.util.Clock
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,12 +42,13 @@ class PillsViewModel(
         }
     }
 
-    fun addMedication(name: String, slots: Set<TimeOfDay>) {
+    fun addMedication(name: String, slots: Set<TimeOfDay>, frequency: MedicationFrequency) {
         viewModelScope.launch {
             medicationRepository.addMedication(
                 name = name,
                 dosesPerDay = slots.size,
                 slots = slots,
+                frequency = frequency,
                 now = clock.now(),
             )
         }

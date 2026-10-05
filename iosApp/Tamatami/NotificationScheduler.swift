@@ -32,12 +32,13 @@ final class NotificationScheduler {
             daysUntilNextPeriod: cycle?.daysUntilNextPeriod,
             glasses: 0,
             goal: 8,
-            now: nowLocalTime(),
+            now: sdk.nowTime(),
             activeMeds: activeMeds,
             takenByMed: [:],
             remindPeriod: profile?.remindPeriodEnabled ?? true,
             remindWater: profile?.remindWaterEnabled ?? false,
-            remindPills: profile?.remindPillsEnabled ?? true
+            remindPills: profile?.remindPillsEnabled ?? true,
+            today: nil
         )
 
         if decision.period {
@@ -61,12 +62,5 @@ final class NotificationScheduler {
         // DateComponents trigger from the slot's time.
         let request = UNNotificationRequest(identifier: id, content: content, trigger: nil)
         center.add(request)
-    }
-
-    private func nowLocalTime() -> Kotlinx_datetimeLocalTime {
-        let c = Calendar.current.dateComponents([.hour, .minute, .second], from: Date())
-        return Kotlinx_datetimeLocalTime(
-            hour: Int32(c.hour!), minute: Int32(c.minute!), second: Int32(c.second!), nanosecond: 0
-        )
     }
 }

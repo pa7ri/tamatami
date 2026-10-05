@@ -57,6 +57,8 @@ class DatabaseRoundTripTest {
             slotsMask = 0b101,
             active = true,
             createdAt = Instant.fromEpochMilliseconds(0),
+            frequencyKind = 0,
+            frequencyValue = 0,
         )
         val medId = db.medicationQueries.lastInsertRowId().executeAsOne()
         val date = LocalDate(2026, 6, 2)

@@ -1,0 +1,53 @@
+name: Tamatami
+
+options:
+  bundleIdPrefix: com.mobile
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  Lottie:
+    url: https://github.com/airbnb/lottie-ios
+    from: "4.5.0"
+
+targets:
+  Tamatami:
+    type: application
+    platform: iOS
+    sources:
+      - path: Tamatami
+    dependencies:
+      - package: Lottie
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mobile.Tamatami
+        GENERATE_INFOPLIST_FILE: YES
+        # SwiftUI @main entry point (TamatamiApp.swift) — no UIKit AppDelegate.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"  # iPhone
+        # HealthKit: usage strings (Info.plist is generated) + entitlement file.
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "Tamatami reads your recent workouts so you can import them into your cycle log."
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "Tamatami saves workouts you log to Apple Health."
+        CODE_SIGN_ENTITLEMENTS: Tamatami/Tamatami.entitlements
+        # Link the Kotlin/Native static framework produced by :shared.
+        FRAMEWORK_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -framework
+          - Shared
+    # Build + embed the right Shared.framework slice before compiling Swift.
+    preBuildScripts:
+      - name: "Build Shared.framework (Kotlin/Native)"
+        basedOnDependencyAnalysis: false
+        script: |
+          # Xcode launches this shell with a low file-descriptor limit (~256),
+          # which the Gradle daemon inherits — Kotlin/Native + AGP transforms
+          # then hit "Too many open files". Raise it to the hard cap first.
+          ulimit -n "$(ulimit -Hn)" 2>/dev/null || ulimit -n 10240 || true
+          cd "$SRCROOT/.."
+          if [ "$CONFIGURATION" = "Release" ]; then KFBT=release; else KFBT=debug; fi
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode -PKOTLIN_FRAMEWORK_BUILD_TYPE=$KFBT

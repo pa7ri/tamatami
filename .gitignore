@@ -32,3 +32,9 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Kotlin Multiplatform build cache
+.kotlin/
+
+# XcodeGen output (regenerate with: cd iosApp && xcodegen)
+iosApp/*.xcodeproj/

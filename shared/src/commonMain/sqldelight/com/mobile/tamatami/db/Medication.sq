@@ -9,7 +9,9 @@ CREATE TABLE medication (
     dosesPerDay INTEGER AS Int NOT NULL,
     slotsMask INTEGER AS Int NOT NULL,
     active INTEGER AS Boolean NOT NULL DEFAULT 1,
-    createdAt INTEGER AS Instant NOT NULL
+    createdAt INTEGER AS Instant NOT NULL,
+    frequencyKind INTEGER AS Int NOT NULL DEFAULT 0,
+    frequencyValue INTEGER AS Int NOT NULL DEFAULT 0
 );
 
 observeActive:
@@ -19,12 +21,12 @@ observeAll:
 SELECT * FROM medication ORDER BY createdAt;
 
 insert:
-INSERT OR REPLACE INTO medication(name, dosesPerDay, slotsMask, active, createdAt)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO medication(name, dosesPerDay, slotsMask, active, createdAt, frequencyKind, frequencyValue)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 upsert:
-INSERT OR REPLACE INTO medication(id, name, dosesPerDay, slotsMask, active, createdAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO medication(id, name, dosesPerDay, slotsMask, active, createdAt, frequencyKind, frequencyValue)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertRowId:
 SELECT last_insert_rowid();

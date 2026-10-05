@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -46,7 +49,12 @@ fun LogWorkoutSheet(
     var notes by remember { mutableStateOf("") }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .padding(24.dp),
+        ) {
             Text("Log a workout", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(16.dp))
 
@@ -118,7 +126,7 @@ fun LogWorkoutSheet(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Save workout") }
+            ) { Text("Save") }
             Spacer(Modifier.height(8.dp))
         }
     }

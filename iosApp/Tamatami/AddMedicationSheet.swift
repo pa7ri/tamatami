@@ -28,6 +28,7 @@ struct AddMedicationSheet: View {
                 }
             }
             .navigationTitle("Add medication")
+            .igListBackground()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

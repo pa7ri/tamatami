@@ -28,19 +28,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
-import com.mobile.tamatami.domain.model.CyclePhase
 import com.mobile.tamatami.domain.nutrition.CravingHint
 import com.mobile.tamatami.domain.nutrition.FoodSuggestion
 import com.mobile.tamatami.domain.nutrition.cravingSuggestions
 import com.mobile.tamatami.domain.nutrition.nutritionFor
-import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.home.displayName
 import com.mobile.tamatami.ui.theme.phaseBrush
 
+/**
+ * Nutrition content — phase-aware food suggestions and craving swaps. Rendered
+ * as a sub-tab inside the Cycle tab ([com.mobile.tamatami.ui.screens.cycleinfo.CycleInfoScreen]),
+ * so it provides no scaffold/bottom bar of its own; the host supplies those.
+ */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun NutritionScreen(navController: NavHostController, container: AppContainer) {
+fun NutritionContent(navController: NavHostController, container: AppContainer) {
     val viewModel: NutritionViewModel = viewModel(
         factory = NutritionViewModel.Factory(
             cycleRepository = container.cycleRepository,
@@ -53,16 +55,10 @@ fun NutritionScreen(navController: NavHostController, container: AppContainer) {
         ?.let { cravingSuggestions(it, state.currentPhase) }
         ?: phaseInfo.suggestedFoods
 
-    TamatamiScaffold(
-        title = "Nutrition",
-        bottomBar = { TamatamiBottomBar(navController) },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
             item {
                 Box(
                     modifier = Modifier
@@ -150,7 +146,6 @@ fun NutritionScreen(navController: NavHostController, container: AppContainer) {
                 }
             }
             item { Spacer(Modifier.height(24.dp)) }
-        }
     }
 }
 

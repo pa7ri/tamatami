@@ -17,6 +17,8 @@ class ReminderEvaluatorTest {
         slotsMask = MedicationSchedule.maskOf(slots),
         active = true,
         createdAt = Instant.fromEpochMilliseconds(0),
+        frequencyKind = 0,
+        frequencyValue = 0,
     )
 
     @Test

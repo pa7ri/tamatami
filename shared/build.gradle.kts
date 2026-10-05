@@ -23,11 +23,13 @@ kotlin {
     // (konan toolchain) — so the shared core is validated for iOS too.
     //
     // Each target produces a `Shared.framework` the SwiftUI app links against.
-    // Static framework keeps the app self-contained (no embedded dylib step).
+    // Dynamic (not static): this is what embedAndSignAppleFrameworkForXcode
+    // embeds into the app bundle, and it lets the linker resolve the ObjC
+    // classes via `-framework Shared` (a static framework needs force-loading).
     listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
-            isStatic = true
+            isStatic = false
         }
     }
 

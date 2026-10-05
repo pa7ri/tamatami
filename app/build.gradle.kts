@@ -78,6 +78,8 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
 
+    implementation(libs.lottie.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.mockk)

@@ -1,5 +1,15 @@
+
 import SwiftUI
 import Shared
+
+/// The Kotlin `HormoneMarker` exposes its reference band as
+/// `expectedRange: ClosedFloatingPointRange<Float>`, which bridges to Swift as a
+/// `KotlinClosedRange` whose `start`/`endInclusive` are `Any` (boxed
+/// `KotlinFloat`). These accessors unbox them to plain `Float` for the UI.
+private extension HormoneMarker {
+    var rangeLow: Float { (expectedRange.start as? KotlinFloat)?.floatValue ?? 0 }
+    var rangeHigh: Float { (expectedRange.endInclusive as? KotlinFloat)?.floatValue ?? 0 }
+}
 
 /// Add-hormone-reading form: value + unit for the given marker.
 struct AddHormoneSheet: View {
@@ -25,11 +35,14 @@ struct AddHormoneSheet: View {
                     TextField("Value", text: $valueText)
                         .keyboardType(.decimalPad)
                     TextField("Unit", text: $unit)
-                    Text("Reference: \(marker.expectedRange.start, specifier: "%.1f")–\(marker.expectedRange.endInclusive, specifier: "%.1f") \(marker.defaultUnit)")
+                    let lo = String(format: "%.1f", marker.rangeLow)
+                    let hi = String(format: "%.1f", marker.rangeHigh)
+                    Text("Reference: \(lo)–\(hi) \(marker.defaultUnit)")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Add reading")
+            .igListBackground()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

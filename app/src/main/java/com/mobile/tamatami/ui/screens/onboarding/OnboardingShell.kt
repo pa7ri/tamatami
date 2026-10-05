@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mobile.tamatami.domain.model.Accessory
+import com.mobile.tamatami.domain.model.TamaExpression
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.model.TamagotchiState
 import com.mobile.tamatami.ui.tamagotchi.TamagotchiAvatar
@@ -94,12 +94,16 @@ fun OnboardingShell(
 
 @Composable
 internal fun OnboardingTamaPreview(
-    mood: TamagotchiMood = TamagotchiMood.HAPPY,
-    accessories: Set<Accessory> = emptySet(),
+    expression: TamaExpression = TamaExpression.HAPPY,
 ) {
     Box(modifier = Modifier.size(220.dp)) {
         TamagotchiAvatar(
-            state = TamagotchiState(mood, accessories, bounceHz = 0.8f),
+            state = TamagotchiState(
+                mood = TamagotchiMood.HAPPY,
+                accessories = emptySet(),
+                bounceHz = 0.8f,
+                expression = expression,
+            ),
             modifier = Modifier.fillMaxSize(),
         )
     }

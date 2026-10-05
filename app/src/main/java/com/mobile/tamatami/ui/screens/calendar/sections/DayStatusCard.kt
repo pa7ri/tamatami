@@ -247,6 +247,7 @@ private fun com.mobile.tamatami.domain.training.WorkoutType.label(): String = wh
     com.mobile.tamatami.domain.training.WorkoutType.CARDIO -> "Cardio"
     com.mobile.tamatami.domain.training.WorkoutType.HIIT -> "HIIT"
     com.mobile.tamatami.domain.training.WorkoutType.OTHER -> "Other"
+    else -> name.lowercase().replaceFirstChar { it.uppercase() }
 }
 
 private fun com.mobile.tamatami.domain.training.WorkoutIntensity.label(): String =

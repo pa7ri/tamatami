@@ -52,10 +52,10 @@ fun TamatamiBottomBar(navController: NavHostController) {
 private fun androidx.navigation.NavDestination.matches(route: TamatamiRoute): Boolean {
     return when (route) {
         TamatamiRoute.Home -> hasRoute(TamatamiRoute.Home::class)
-        TamatamiRoute.Calendar -> hasRoute(TamatamiRoute.Calendar::class)
-        TamatamiRoute.Training -> hasRoute(TamatamiRoute.Training::class)
         TamatamiRoute.CycleInfo -> hasRoute(TamatamiRoute.CycleInfo::class)
-        TamatamiRoute.Nutrition -> hasRoute(TamatamiRoute.Nutrition::class)
+        TamatamiRoute.Training -> hasRoute(TamatamiRoute.Training::class)
+        TamatamiRoute.Health -> hasRoute(TamatamiRoute.Health::class)
+        TamatamiRoute.Settings -> hasRoute(TamatamiRoute.Settings::class)
         else -> false
     }
 }

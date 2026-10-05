@@ -21,6 +21,7 @@ kotlinxDatetime = "0.6.1"
 sqldelight = "2.3.2"
 healthConnect = "1.1.0"
 workManager = "2.9.1"
+lottie = "6.6.6"
 
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -67,6 +68,8 @@ sqldelight-sqlite-driver = { group = "app.cash.sqldelight", name = "sqlite-drive
 androidx-health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "healthConnect" }
 
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
