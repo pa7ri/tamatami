@@ -9,7 +9,7 @@ import Shared
 typealias TamaState = TamagotchiState_
 
 /// The Tamagotchi mascot, driven by the shared `TamagotchiMoodEngine` (via
-/// `tamagotchi.observe`). `state.expression` selects one of seven looping Lottie
+/// `tamagotchi.observe`). `state.expression` selects one of five looping Lottie
 /// animations bundled under `Animations/`. When the expression changes, SwiftUI
 /// swaps the `LottieView` (keyed by expression) and cross-fades.
 struct TamagotchiAvatar: View {
@@ -40,8 +40,6 @@ struct TamagotchiAvatar: View {
         case .sadTired: return "sad_tired"
         case .moody: return "moody"
         case .romantic: return "romantic"
-        case .sleepy: return "sleepy"
-        case .thirsty: return "thirsty"
         default: return "greeting"
         }
     }

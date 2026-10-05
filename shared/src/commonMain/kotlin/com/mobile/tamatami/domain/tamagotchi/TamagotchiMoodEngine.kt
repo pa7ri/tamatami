@@ -30,7 +30,7 @@ import com.mobile.tamatami.domain.model.TamagotchiState
  *
  * The animated [TamaExpression] (one Lottie per value) is then picked by a
  * priority ladder over the same signals — the most salient need wins:
- *   thirsty > sleepy > romantic > sad/tired > moody > happy > greeting.
+ *   romantic > sad/tired > moody > happy > greeting.
  */
 object TamagotchiMoodEngine {
 
@@ -117,8 +117,6 @@ object TamagotchiMoodEngine {
             (cycle.phase == CyclePhase.OVULATORY &&
                 (daily.mood == Mood.GREAT || daily.mood == Mood.GOOD))
         return when {
-            Accessory.THIRSTY_DROPLET in accessories -> TamaExpression.THIRSTY
-            Accessory.TIRED_ZZZ in accessories -> TamaExpression.SLEEPY
             romanticVibe -> TamaExpression.ROMANTIC
             mood == TamagotchiMood.SAD -> TamaExpression.SAD_TIRED
             mood == TamagotchiMood.NEUTRAL -> TamaExpression.MOODY

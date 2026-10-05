@@ -21,10 +21,4 @@ enum class TamaExpression {
 
     /** Loved-up / glowing — sparkle or heart signals. */
     ROMANTIC,
-
-    /** Drowsy — luteal + low mood. */
-    SLEEPY,
-
-    /** Under-hydrated — water well below goal. */
-    THIRSTY,
 }

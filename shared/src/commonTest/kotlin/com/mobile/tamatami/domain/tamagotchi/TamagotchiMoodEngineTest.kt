@@ -136,19 +136,23 @@ class TamagotchiMoodEngineTest {
 
     // --- Expression derivation (one Lottie per state) ------------------------
 
-    @Test fun lowWaterExpressionIsThirsty() {
-        // water 0 (< goal/2) earns the THIRSTY_DROPLET, which outranks everything.
+    @Test fun lowWaterStillSetsThirstyDropletButGreetingExpression() {
+        // water 0 earns the THIRSTY_DROPLET accessory, but with no dedicated
+        // thirsty expression the mascot falls through to GREETING.
         val state = TamagotchiMoodEngine.derive(cycle(CyclePhase.FOLLICULAR), daily(water = 0))
-        assertEquals(TamaExpression.THIRSTY, state.expression)
+        assertContains(state.accessories, Accessory.THIRSTY_DROPLET)
+        assertEquals(TamaExpression.GREETING, state.expression)
     }
 
-    @Test fun lutealLowMoodButHydratedExpressionIsSleepy() {
-        // hydrated (no droplet) but luteal + low mood earns the ZZZ -> SLEEPY.
+    @Test fun lutealLowMoodButHydratedSetsTiredZzzButGreetingExpression() {
+        // hydrated (no droplet) but luteal + low mood earns the ZZZ accessory;
+        // with no dedicated sleepy expression it falls through to GREETING.
         val state = TamagotchiMoodEngine.derive(
             cycle(CyclePhase.LUTEAL),
             daily(water = 8, mood = Mood.LOW),
         )
-        assertEquals(TamaExpression.SLEEPY, state.expression)
+        assertContains(state.accessories, Accessory.TIRED_ZZZ)
+        assertEquals(TamaExpression.GREETING, state.expression)
     }
 
     @Test fun ovulatoryGreatMoodExpressionIsRomantic() {

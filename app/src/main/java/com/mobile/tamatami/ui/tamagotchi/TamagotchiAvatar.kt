@@ -63,18 +63,15 @@ fun TamagotchiAvatar(
 
 /**
  * Maps an [TamaExpression] to its bundled Lottie asset. `LottieCompositionSpec.Asset`
- * accepts both dotLottie (`.lottie`) and bare Lottie `.json`; the files bundled in
- * `assets/tama/` are `.json` placeholders — replace them in place with the real
- * exports (keep the filenames, or swap the extension here to `.lottie`).
+ * accepts both dotLottie (`.lottie`) and bare Lottie `.json`; every expression uses the
+ * dotLottie exports bundled in `assets/tama/`.
  */
 internal fun assetFor(expression: TamaExpression): String = "tama/" + when (expression) {
-    TamaExpression.GREETING -> "greeting.json"
-    TamaExpression.HAPPY -> "happy.json"
-    TamaExpression.SAD_TIRED -> "sad_tired.json"
-    TamaExpression.MOODY -> "moody.json"
-    TamaExpression.ROMANTIC -> "romantic.json"
-    TamaExpression.SLEEPY -> "sleepy.json"
-    TamaExpression.THIRSTY -> "thirsty.json"
+    TamaExpression.GREETING -> "greeting.lottie"
+    TamaExpression.HAPPY -> "happy.lottie"
+    TamaExpression.SAD_TIRED -> "sad_tired.lottie"
+    TamaExpression.MOODY -> "moody.lottie"
+    TamaExpression.ROMANTIC -> "romantic.lottie"
 }
 
 // -----------------------------------------------------------------------------
@@ -105,15 +102,6 @@ private fun PreviewHappy() = TamatamiClassicTheme {
 private fun PreviewRomantic() = TamatamiClassicTheme {
     TamagotchiAvatar(
         TamagotchiState(TamagotchiMood.GLOWING, emptySet(), 1.4f, TamaExpression.ROMANTIC),
-        modifier = Modifier.size(220.dp),
-    )
-}
-
-@Preview(name = "Thirsty", showBackground = true)
-@Composable
-private fun PreviewThirsty() = TamatamiClassicTheme {
-    TamagotchiAvatar(
-        TamagotchiState(TamagotchiMood.NEUTRAL, emptySet(), 0.6f, TamaExpression.THIRSTY),
         modifier = Modifier.size(220.dp),
     )
 }
