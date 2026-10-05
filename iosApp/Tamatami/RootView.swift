@@ -29,10 +29,10 @@ private struct MainTabs: View {
         TabView {
             HomeScreen()
                 .tabItem { Label("Home", systemImage: "house") }
-            TrainingScreen()
-                .tabItem { Label("Training", systemImage: "figure.run") }
             GuideScreen()
                 .tabItem { Label("Cycle", systemImage: "sparkles") }
+            CalendarScreen()
+                .tabItem { Label("Calendar", systemImage: "calendar") }
             HealthScreen()
                 .tabItem { Label("Health", systemImage: "stethoscope") }
         }

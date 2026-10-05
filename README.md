@@ -7,11 +7,11 @@
 **Log your cycle. Care for your Tama. Watch them bloom across menstrual, follicular, ovulatory, and luteal phases.**
 
 <p>
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
-  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20iOS-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img alt="Kotlin Multiplatform" src="https://img.shields.io/badge/Kotlin%20Multiplatform-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
   <img alt="Jetpack Compose" src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" />
+  <img alt="SwiftUI" src="https://img.shields.io/badge/SwiftUI-0071E3?style=for-the-badge&logo=swift&logoColor=white" />
   <img alt="Material 3" src="https://img.shields.io/badge/Material%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white" />
-  <img alt="min SDK 31" src="https://img.shields.io/badge/min%20SDK-31-success?style=for-the-badge" />
 </p>
 
 <sub>Period tracking that doesn't feel clinical. A tiny companion that reacts to where you are in your cycle.</sub>
@@ -72,26 +72,39 @@ Each cycle phase has its own color in the app — they tint the calendar, the ho
 
 ## 🧩 What's inside
 
-- 🏠 **Home** — your Tama, today's mood, the day at a glance.
-- 📅 **Calendar** — month grid tinted by predicted phase, with logged-period dots whose darkness encodes flow (spotting → heavy), prediction rings for next period and ovulation, and a today ring. Tap any day to log flow and mood.
-- 💪 **Training** — phase-aware workout suggestions: gentler moves in menstrual, push days in follicular/ovulatory, mobility in luteal.
-- ❤️ **Cycle** — phase summary, hormone overview, and what to expect next.
-- 🥗 **Nutrition** — foods that pair well with the phase you're in.
-- 🧬 **Hormones** — a deeper view of estrogen / progesterone / LH rhythms across the cycle.
-- 👋 **Onboarding** — name your Tama, log your last period, set cycle length. You're tracking inside two minutes.
+- 🏠 **Home** — your Tama, today's mood, and quick trackers (water, mood, activity) at a glance.
+- ❤️ **Cycle & Training** — one tab with three views: phase summary and what to expect
+  (*Cycle info*), phase-aware food suggestions (*Nutrition*), and phase-aware workout
+  recommendations (*Training* — gentler moves in menstrual, push days in follicular/ovulatory,
+  mobility in luteal).
+- 📅 **Calendar** — its own tab: a month grid tinted by predicted phase, with logged-period dots
+  whose darkness encodes flow (spotting → heavy), prediction rings for next period and ovulation,
+  and a today ring. Tap any day to log flow and mood.
+- 🩺 **Health** — *Hormones* (estrogen / progesterone / LH rhythms across the cycle) and
+  *Medication* tracking.
+- ⚙️ **Settings** — reached via the gear in the top bar of every screen; profile, cycle length,
+  daily goals, and reminders.
+- 👋 **Onboarding** — name your Tama, log your last period, set cycle length. You're tracking
+  inside two minutes.
 
 ---
 
 ## 🛠 Built with
 
-- **Kotlin** + **Jetpack Compose** + **Material 3**
-- **Navigation Compose** (type-safe `@Serializable` routes)
-- **Room** for local persistence — your cycle never leaves your device
-- **Coroutines / Flow** end to end
-- **KSP** for compile-time codegen
-- Phase color tokens exposed via `CompositionLocal` so every screen reads "where am I in my cycle" without prop-drilling
+**Kotlin Multiplatform** — the domain, data, and business logic (cycle prediction, the Tamagotchi
+mood engine, phase guides, nutrition and training recommendations) live in a shared `:shared`
+module and are consumed by both apps.
 
-Target: Android 12+ (min SDK 31, compile SDK 36).
+- **Android** — Jetpack Compose + Material 3, Navigation Compose (type-safe `@Serializable` routes),
+  edge-to-edge insets.
+- **iOS** — SwiftUI, calling directly into the shared KMP framework (no logic reimplemented in
+  Swift); Lottie via `lottie-ios`.
+- **Room** (Android) / **SQLDelight** (shared) for local persistence — your cycle never leaves your device
+- **Coroutines / Flow** end to end, bridged to SwiftUI on iOS
+- The mascot renders as a **Lottie** animation that plays once, rests ~1 minute, then replays — a
+  calm heartbeat rather than a restless loop — and cross-fades gently between moods.
+
+Targets: Android 12+ (min SDK 31, compile SDK 36) and iOS 16+.
 
 ---
 
@@ -108,10 +121,19 @@ cd tamatami
 # or open in Android Studio (Iguana+) and hit ▶︎
 ```
 
+For iOS, generate and open the Xcode project (requires [XcodeGen](https://github.com/yonaskolb/XcodeGen)):
+
+```bash
+cd iosApp
+xcodegen generate
+open Tamatami.xcodeproj   # then pick an iPhone simulator and hit ▶︎
+```
+
 Run the unit tests:
 
 ```bash
-./gradlew :app:testDebugUnitTest
+./gradlew :app:testDebugUnitTest   # Android
+./gradlew :shared:jvmTest          # shared domain (mood engine, guides, predictions)
 ```
 
 ---
@@ -119,16 +141,24 @@ Run the unit tests:
 ## 🗺 Project layout
 
 ```
-app/src/main/java/com/mobile/tamatami/
-├── data/         # Room entities, DAOs, repositories
-├── di/           # AppContainer — hand-rolled DI
-├── domain/       # CyclePhase, MonthBuilder, Mood, PeriodFlow…
+shared/src/commonMain/kotlin/com/mobile/tamatami/
+├── domain/        # CyclePhase, Mood, PeriodFlow, TamagotchiMoodEngine, guides…
+└── data/          # SQLDelight-backed repositories (shared by both apps)
+
+app/src/main/java/com/mobile/tamatami/   # Android
+├── data/          # Room entities, DAOs, repositories
+├── di/            # AppContainer — hand-rolled DI
 └── ui/
-    ├── components/   # Scaffold, BottomBar, shared UI
+    ├── components/   # Scaffold, BottomBar, SettingsAction, shared UI
     ├── nav/          # TamatamiNavHost + type-safe routes
-    ├── screens/      # home, calendar, training, cycleinfo, nutrition,
-    │                 # hormones, onboarding, settings, stub
+    ├── screens/      # home, cycleinfo (Cycle & Training), calendar, nutrition,
+    │                 # training, health, hormones, pills, onboarding, settings
     └── theme/        # Phase + mood color tokens, gradients
+
+iosApp/Tamatami/                          # iOS (SwiftUI)
+├── RootView.swift     # onboarding gate + TabView (Home · Cycle & Training · Calendar · Health)
+├── *Screen.swift      # one view per tab/screen, calling into the shared framework
+└── TamagotchiAvatar.swift  # Lottie mascot driven by the shared mood engine
 ```
 
 ---

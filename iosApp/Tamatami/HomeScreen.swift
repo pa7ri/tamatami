@@ -1,21 +1,14 @@
 import SwiftUI
 import Shared
 
-/// Home = the whole daily surface in one scroll: the Tamagotchi avatar, quick
-/// "today" trackers (water / mood / activity), the month calendar, and a rich
-/// day-detail panel for the tapped date (flow, mood, water, activities).
-///
-/// Absorbs the former standalone Calendar screen. The calendar legend lives
-/// behind the toolbar info button so the grid itself stays clean.
+/// Home = the daily surface: the Tamagotchi avatar and quick "today" trackers
+/// (water / mood / activity). The month calendar + day-detail now live in their
+/// own Calendar tab (see `CalendarScreen`).
 struct HomeScreen: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = HomeModel()
     @StateObject private var tama = TamagotchiModel()
-    @State private var showLegend = false
     @State private var showLogSheet = false
-
-    private let weekdays = ["S", "M", "T", "W", "T", "F", "S"]
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
     var body: some View {
         NavigationStack {
@@ -23,24 +16,16 @@ struct HomeScreen: View {
                 VStack(spacing: 16) {
                     avatarCard
                     todayCard
-                    calendarCard
-                    if model.selectedDay != nil {
-                        DayDetail(model: model, onLogActivity: { showLogSheet = true })
-                    }
                 }
                 .padding()
             }
             .background(IG.bg.ignoresSafeArea(edges: [.bottom, .horizontal]))
             .navigationTitle("Tamatami")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { showLegend = true } label: { Image(systemName: "info.circle") }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink { SettingsScreen() } label: { Image(systemName: "gearshape") }
                 }
             }
-            .sheet(isPresented: $showLegend) { LegendSheet() }
             .sheet(isPresented: $showLogSheet) {
                 LogWorkoutSheet { activity, minutes, intensity in
                     Task { await model.logActivity(activity, minutes: minutes, intensity: intensity) }
@@ -113,35 +98,7 @@ struct HomeScreen: View {
         .igCard()
     }
 
-    // MARK: - Calendar
-
-    private var calendarCard: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Button { model.goPrevMonth() } label: { Image(systemName: "chevron.left") }
-                Spacer()
-                Text(model.monthTitle).font(.headline).foregroundStyle(IG.text)
-                Spacer()
-                Button { model.goNextMonth() } label: { Image(systemName: "chevron.right") }
-            }
-            .tint(.white)
-
-            HStack {
-                ForEach(Array(weekdays.enumerated()), id: \.offset) { _, d in
-                    Text(d).font(.caption2).foregroundStyle(IG.subtext)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-
-            LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(Array(model.days.enumerated()), id: \.offset) { _, day in
-                    DayCell(day: day, selected: model.isSelected(day))
-                        .onTapGesture { model.select(day) }
-                }
-            }
-        }
-        .igCard()
-    }
+    // MARK: - Phase label
 
     private func phaseLabel(_ phase: CyclePhase) -> String {
         switch phase {
@@ -156,7 +113,7 @@ struct HomeScreen: View {
 
 // MARK: - Day cell
 
-private struct DayCell: View {
+struct DayCell: View {
     let day: CalendarDay
     let selected: Bool
 
@@ -188,7 +145,7 @@ private struct DayCell: View {
 
 // MARK: - Day detail (flow / mood / water / activities for the tapped date)
 
-private struct DayDetail: View {
+struct DayDetail: View {
     @ObservedObject var model: HomeModel
     let onLogActivity: () -> Void
 
@@ -301,7 +258,7 @@ struct MoodPicker: View {
 
 // MARK: - Legend (behind info button)
 
-private struct LegendSheet: View {
+struct LegendSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {

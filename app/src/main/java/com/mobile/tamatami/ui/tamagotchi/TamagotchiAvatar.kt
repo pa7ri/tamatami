@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -16,20 +20,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mobile.tamatami.domain.model.TamaExpression
 import com.mobile.tamatami.domain.model.TamagotchiMood
 import com.mobile.tamatami.domain.model.TamagotchiState
 import com.mobile.tamatami.ui.theme.TamatamiClassicTheme
+import kotlinx.coroutines.delay
 
-private const val EXPRESSION_CROSSFADE_MS = 420
+/** A gentle, slow fade between expressions so mood shifts don't feel abrupt. */
+private const val EXPRESSION_CROSSFADE_MS = 1_200
+
+/** How long to idle between one-shot plays, so the mascot doesn't loop restlessly. */
+private const val IDLE_BETWEEN_PLAYS_MS = 60_000L
 
 /**
- * Tamagotchi mascot, rendered as a looping Lottie animation. Stateless:
- * [TamagotchiState.expression] selects which of the seven animations plays.
- * When the expression changes (the underlying cycle/log signals shift), the
- * new animation cross-fades in over [EXPRESSION_CROSSFADE_MS].
+ * Tamagotchi mascot, rendered as a Lottie animation that plays through once and
+ * then rests. Stateless: [TamagotchiState.expression] selects which animation
+ * plays. Rather than looping forever, the clip runs a single iteration, idles
+ * for [IDLE_BETWEEN_PLAYS_MS] (~1 min), then replays — a calm heartbeat instead
+ * of a restless loop. When the expression changes, the new animation cross-fades
+ * in gently over [EXPRESSION_CROSSFADE_MS].
  *
  * Animations live in `assets/tama/` — see [assetFor].
  */
@@ -52,9 +63,29 @@ fun TamagotchiAvatar(
             val composition by rememberLottieComposition(
                 LottieCompositionSpec.Asset(assetFor(expression)),
             )
+
+            // Play a single iteration, then idle. Toggling isPlaying false→true
+            // (with restartOnPlay) replays the clip from the start.
+            var isPlaying by remember { mutableStateOf(true) }
+            val animationState = animateLottieCompositionAsState(
+                composition = composition,
+                isPlaying = isPlaying,
+                restartOnPlay = true,
+                iterations = 1,
+            )
+
+            // One play finished → rest for ~1 min, then kick off the next.
+            LaunchedEffect(animationState.isAtEnd) {
+                if (animationState.isAtEnd) {
+                    isPlaying = false
+                    delay(IDLE_BETWEEN_PLAYS_MS)
+                    isPlaying = true
+                }
+            }
+
             LottieAnimation(
                 composition = composition,
-                iterations = LottieConstants.IterateForever,
+                progress = { animationState.progress },
                 modifier = Modifier.fillMaxSize(),
             )
         }

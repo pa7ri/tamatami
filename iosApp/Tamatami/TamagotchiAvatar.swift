@@ -9,21 +9,40 @@ import Shared
 typealias TamaState = TamagotchiState_
 
 /// The Tamagotchi mascot, driven by the shared `TamagotchiMoodEngine` (via
-/// `tamagotchi.observe`). `state.expression` selects one of five looping Lottie
-/// animations bundled under `Animations/`. When the expression changes, SwiftUI
-/// swaps the `LottieView` (keyed by expression) and cross-fades.
+/// `tamagotchi.observe`). `state.expression` selects one of five Lottie
+/// animations bundled under `Animations/`. Rather than looping forever, the clip
+/// plays through **once**, rests for ~1 minute, then replays — a calm heartbeat
+/// instead of a restless loop. When the expression changes, SwiftUI swaps the
+/// `LottieView` (keyed by expression) and cross-fades gently.
 struct TamagotchiAvatar: View {
     let state: TamaState
+
+    /// How long to idle between one-shot plays. Mirrors Android's
+    /// `IDLE_BETWEEN_PLAYS_MS` (60 s) in `TamagotchiAvatar.kt`.
+    private static let idleBetweenPlays: Duration = .seconds(60)
+    /// Gentle cross-fade; mirrors Android's `EXPRESSION_CROSSFADE_MS` (1.2 s).
+    private static let crossfade: Double = 1.2
+
+    // Bumping this restarts playback. It also keys the LottieView via `.id`, so
+    // each tick recreates the view and plays the clip from the start once.
+    @State private var playTick = 0
 
     var body: some View {
         VStack(spacing: 8) {
             LottieView(animation: .named(assetName(state.expression)))
+                .playing(.fromProgress(0, toProgress: 1, loopMode: .playOnce))
+                .animationDidFinish { _ in
+                    // One play finished → rest, then trigger the next.
+                    Task {
+                        try? await Task.sleep(for: Self.idleBetweenPlays)
+                        playTick += 1
+                    }
+                }
                 .resizable()
-                .looping()
-                .id(state.expression)                       // re-create on change
+                .id("\(state.expression)-\(playTick)")   // recreate on change / replay
                 .frame(width: 180, height: 180)
                 .transition(.opacity)
-                .animation(.easeInOut(duration: 0.42), value: state.expression)
+                .animation(.easeInOut(duration: Self.crossfade), value: state.expression)
 
             Text(moodLabel(state.mood))
                 .font(.caption).foregroundStyle(.secondary)

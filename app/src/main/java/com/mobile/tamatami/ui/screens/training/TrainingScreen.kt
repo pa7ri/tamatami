@@ -26,8 +26,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.sleep.SleepRating
-import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.training.sections.LogSleepSheet
 import com.mobile.tamatami.ui.screens.training.sections.LogWorkoutSheet
 import com.mobile.tamatami.ui.screens.training.sections.RecentWorkoutsList
@@ -39,8 +37,15 @@ import kotlinx.datetime.toKotlinLocalDate
 
 private const val HEALTH_CONNECT_PACKAGE = "com.google.android.apps.healthdata"
 
+/**
+ * Training as an embeddable section — hosted as a sub-tab inside the "Cycle &
+ * Training" screen (see [com.mobile.tamatami.ui.screens.cycleinfo.CycleInfoScreen]).
+ * Renders a scrolling [LazyColumn] with no scaffold or bottom bar of its own;
+ * the host owns those. Keeps its own [TrainingViewModel], Health-Connect
+ * permission flow, and the workout/sleep logging sheets.
+ */
 @Composable
-fun TrainingScreen(navController: NavHostController, container: AppContainer) {
+fun TrainingContent(navController: NavHostController, container: AppContainer) {
     val viewModel: TrainingViewModel = viewModel(
         factory = TrainingViewModel.Factory(
             userRepository = container.userRepository,
@@ -62,52 +67,46 @@ fun TrainingScreen(navController: NavHostController, container: AppContainer) {
         viewModel.stepsPermissionContract,
     ) { _ -> viewModel.refreshSteps() }
 
-    TamatamiScaffold(
-        title = "Training",
-        bottomBar = { TamatamiBottomBar(navController) },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            item { RecommendationCard(state.recommendation) }
-            item {
-                Button(
-                    onClick = { workoutSheetOpen = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("Log workout") }
-            }
-            if (state.energy != null) {
-                item {
-                    Text(
-                        text = "Recommendation adjusted to today's energy: ${state.energy}/5",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            item {
-                StepsCard(
-                    steps = state.steps,
-                    goal = state.stepsGoal,
-                    onConnect = { permissionLauncher.launch(viewModel.stepsPermissions) },
-                    onInstallHealthConnect = { openHealthConnectListing(context) },
-                )
-            }
-            item {
-                SleepCard(
-                    sleep = state.sleep,
-                    goalMinutes = state.sleepGoalMinutes,
-                    expected = state.expectedSleep,
-                    onLogSleep = { sleepSheetOpen = true },
-                )
-            }
-            item { RecentWorkoutsList(state.recentWorkouts) }
-            item { Spacer(Modifier.height(24.dp)) }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item { RecommendationCard(state.recommendation) }
+        item {
+            Button(
+                onClick = { workoutSheetOpen = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Log workout") }
         }
+        if (state.energy != null) {
+            item {
+                Text(
+                    text = "Recommendation adjusted to today's energy: ${state.energy}/5",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        item {
+            StepsCard(
+                steps = state.steps,
+                goal = state.stepsGoal,
+                onConnect = { permissionLauncher.launch(viewModel.stepsPermissions) },
+                onInstallHealthConnect = { openHealthConnectListing(context) },
+            )
+        }
+        item {
+            SleepCard(
+                sleep = state.sleep,
+                goalMinutes = state.sleepGoalMinutes,
+                expected = state.expectedSleep,
+                onLogSleep = { sleepSheetOpen = true },
+            )
+        }
+        item { RecentWorkoutsList(state.recentWorkouts) }
+        item { Spacer(Modifier.height(24.dp)) }
     }
 
     if (workoutSheetOpen) {

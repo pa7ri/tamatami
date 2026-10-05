@@ -16,12 +16,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mobile.tamatami.di.AppContainer
+import com.mobile.tamatami.ui.screens.calendar.CalendarScreen
 import com.mobile.tamatami.ui.screens.cycleinfo.CycleInfoScreen
 import com.mobile.tamatami.ui.screens.health.HealthScreen
 import com.mobile.tamatami.ui.screens.home.HomeScreen
 import com.mobile.tamatami.ui.screens.onboarding.onboardingGraph
 import com.mobile.tamatami.ui.screens.settings.SettingsScreen
-import com.mobile.tamatami.ui.screens.training.TrainingScreen
 
 @Composable
 fun TamatamiNavHost(container: AppContainer) {
@@ -57,8 +57,8 @@ fun TamatamiNavHost(container: AppContainer) {
             },
         )
         composable<TamatamiRoute.Home> { HomeScreen(navController, container) }
-        composable<TamatamiRoute.Training> { TrainingScreen(navController, container) }
         composable<TamatamiRoute.CycleInfo> { CycleInfoScreen(navController, container) }
+        composable<TamatamiRoute.Calendar> { CalendarScreen(navController, container) }
         composable<TamatamiRoute.Health> { HealthScreen(navController, container) }
         composable<TamatamiRoute.Settings> { SettingsScreen(navController, container) }
     }

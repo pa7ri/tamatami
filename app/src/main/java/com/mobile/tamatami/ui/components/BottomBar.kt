@@ -53,9 +53,8 @@ private fun androidx.navigation.NavDestination.matches(route: TamatamiRoute): Bo
     return when (route) {
         TamatamiRoute.Home -> hasRoute(TamatamiRoute.Home::class)
         TamatamiRoute.CycleInfo -> hasRoute(TamatamiRoute.CycleInfo::class)
-        TamatamiRoute.Training -> hasRoute(TamatamiRoute.Training::class)
+        TamatamiRoute.Calendar -> hasRoute(TamatamiRoute.Calendar::class)
         TamatamiRoute.Health -> hasRoute(TamatamiRoute.Health::class)
-        TamatamiRoute.Settings -> hasRoute(TamatamiRoute.Settings::class)
         else -> false
     }
 }

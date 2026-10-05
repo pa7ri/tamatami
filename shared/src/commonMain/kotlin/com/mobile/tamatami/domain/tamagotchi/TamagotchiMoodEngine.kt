@@ -28,9 +28,10 @@ import com.mobile.tamatami.domain.model.TamagotchiState
  *
  *   GLOWING gets a brisk 1.4 Hz bounce; everyone else 0.6 Hz.
  *
- * The animated [TamaExpression] (one Lottie per value) is then picked by a
- * priority ladder over the same signals — the most salient need wins:
- *   romantic > sad/tired > moody > happy > greeting.
+ * The animated [TamaExpression] (one Lottie per value) then follows the
+ * sustained mood tier so it stays steady day to day:
+ *   GLOWING → romantic/happy ; HAPPY → happy ; CONTENT → greeting ;
+ *   NEUTRAL → moody ; SAD → sad/tired.
  */
 object TamagotchiMoodEngine {
 
@@ -92,7 +93,7 @@ object TamagotchiMoodEngine {
             else -> TamagotchiMood.SAD
         }
 
-        val expression = deriveExpression(mood, accessories, cycle, daily)
+        val expression = deriveExpression(mood, accessories, cycle)
 
         return TamagotchiState(
             mood = mood,
@@ -103,25 +104,28 @@ object TamagotchiMoodEngine {
     }
 
     /**
-     * Picks the animated expression from the strongest active signal. Order
-     * matters: an acute need (thirst) outranks a lasting vibe (moody).
+     * Picks the animated expression from the sustained mood tier, so the mascot
+     * doesn't flip animations on every small signal change. Each of the five
+     * mood tiers maps to one steady expression; ROMANTIC and SAD_TIRED are
+     * reserved for the strongest states (GLOWING / SAD) rather than firing on a
+     * single good or neutral day.
      */
     private fun deriveExpression(
         mood: TamagotchiMood,
         accessories: Set<Accessory>,
         cycle: CycleSnapshot,
-        daily: DailySnapshot,
     ): TamaExpression {
-        val romanticVibe = Accessory.HEART in accessories ||
-            Accessory.SPARKLE in accessories ||
-            (cycle.phase == CyclePhase.OVULATORY &&
-                (daily.mood == Mood.GREAT || daily.mood == Mood.GOOD))
+        // A romantic flourish only when the mascot is already glowing *and* the
+        // signals back it up — not for an ordinary good mood.
+        val romanticVibe = mood == TamagotchiMood.GLOWING &&
+            (Accessory.HEART in accessories || Accessory.SPARKLE in accessories ||
+                cycle.phase == CyclePhase.OVULATORY)
         return when {
             romanticVibe -> TamaExpression.ROMANTIC
-            mood == TamagotchiMood.SAD -> TamaExpression.SAD_TIRED
+            mood == TamagotchiMood.GLOWING || mood == TamagotchiMood.HAPPY -> TamaExpression.HAPPY
+            mood == TamagotchiMood.CONTENT -> TamaExpression.GREETING
             mood == TamagotchiMood.NEUTRAL -> TamaExpression.MOODY
-            mood == TamagotchiMood.HAPPY || mood == TamagotchiMood.GLOWING -> TamaExpression.HAPPY
-            else -> TamaExpression.GREETING
+            else -> TamaExpression.SAD_TIRED // SAD
         }
     }
 }

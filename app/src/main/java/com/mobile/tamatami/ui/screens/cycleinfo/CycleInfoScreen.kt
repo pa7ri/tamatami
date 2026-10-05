@@ -35,25 +35,30 @@ import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.cycle.guideFor
 import com.mobile.tamatami.domain.model.CyclePhase
+import com.mobile.tamatami.ui.components.SettingsAction
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.home.displayName
 import com.mobile.tamatami.ui.screens.nutrition.NutritionContent
+import com.mobile.tamatami.ui.screens.training.TrainingContent
 import com.mobile.tamatami.ui.theme.phaseBrush
 
 /**
- * The "Cycle" tab: a two-way sub-tab switch between phase guidance ("Cycle info")
- * and phase-aware food suggestions ("Nutrition"). Hosts the single scaffold and
- * bottom bar; each sub-tab renders its own content composable.
+ * The "Cycle & Training" tab: a three-way sub-tab switch between phase guidance
+ * ("Cycle info"), phase-aware food suggestions ("Nutrition"), and workout
+ * recommendations ("Training"). Hosts the single scaffold and bottom bar; each
+ * sub-tab renders its own content composable. Settings is reached via the gear
+ * action in the top bar.
  */
 @Composable
 fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
     var subTab by remember { mutableIntStateOf(0) }
-    val subTabs = listOf("Cycle info", "Nutrition")
+    val subTabs = listOf("Cycle info", "Nutrition", "Training")
 
     TamatamiScaffold(
-        title = "Cycle",
+        title = "Cycle & Training",
         bottomBar = { TamatamiBottomBar(navController) },
+        actions = { SettingsAction(navController) },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -71,7 +76,8 @@ fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
             }
             when (subTab) {
                 0 -> CycleInfoContent(container)
-                else -> NutritionContent(navController, container)
+                1 -> NutritionContent(navController, container)
+                else -> TrainingContent(navController, container)
             }
         }
     }

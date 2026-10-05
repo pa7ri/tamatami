@@ -37,8 +37,8 @@ import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.model.Mood
 import com.mobile.tamatami.domain.model.PeriodFlow
+import com.mobile.tamatami.ui.components.SettingsAction
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
-import com.mobile.tamatami.ui.screens.calendar.sections.CalendarContent
 import com.mobile.tamatami.ui.screens.home.sections.CycleStatusSection
 import com.mobile.tamatami.ui.screens.home.sections.NextPeriodSection
 import com.mobile.tamatami.ui.screens.home.sections.QuickLogSection
@@ -65,6 +65,7 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Hi, ${state.tamaName} 👋") },
+                actions = { SettingsAction(navController) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                 ),
@@ -92,7 +93,6 @@ fun HomeScreen(
                     onFlowSelected = viewModel::setFlow,
                 )
             }
-            item { CalendarContent(container) }
             item { Spacer(Modifier.height(24.dp)) }
         }
     }

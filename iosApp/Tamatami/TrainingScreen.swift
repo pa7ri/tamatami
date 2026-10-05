@@ -1,65 +1,64 @@
 import SwiftUI
 import Shared
 
-/// Training: phase+energy-based recommendation (pure shared logic), the recent
-/// workouts list (observed Flow), a rich activity-picker log sheet, and two-way
-/// Apple Health sync (mirror logged workouts out, import recent ones in).
-struct TrainingScreen: View {
+/// Training content, embedded as a segment of the "Cycle & Training" tab (see
+/// `GuideScreen`). Phase+energy-based recommendation (pure shared logic), the
+/// recent workouts list (observed Flow), a rich activity-picker log sheet, and
+/// two-way Apple Health sync. Renders a bare `List` (no NavigationStack/title) so
+/// the host screen owns the navigation chrome.
+struct TrainingContent: View {
     @EnvironmentObject var app: AppState
     @StateObject private var model = TrainingModel()
     @StateObject private var health = HealthKitService.shared
     @State private var showLogSheet = false
 
     var body: some View {
-        NavigationStack {
-            List {
-                if let rec = model.recommendation {
-                    Section("Recommended today") {
-                        Text("Intensity: \(intensityLabel(rec.intensity))")
-                        Text(rec.suggestedTypes.map { typeLabel($0) }.joined(separator: ", "))
-                            .foregroundStyle(.secondary)
-                    }
+        List {
+            if let rec = model.recommendation {
+                Section("Recommended today") {
+                    Text("Intensity: \(intensityLabel(rec.intensity))")
+                    Text(rec.suggestedTypes.map { typeLabel($0) }.joined(separator: ", "))
+                        .foregroundStyle(.secondary)
                 }
-                Section("Recent workouts") {
-                    if model.workouts.isEmpty {
-                        Text("None logged yet.").foregroundStyle(.secondary)
-                    } else {
-                        ForEach(model.workouts, id: \.id) { w in
-                            HStack {
-                                Image(systemName: ActivityCatalog.forWorkoutType(w.type).symbol)
-                                    .foregroundStyle(.secondary)
-                                Text(typeLabel(w.type))
-                                Spacer()
-                                Text("\(w.durationMinutes) min").foregroundStyle(.secondary)
-                            }
+            }
+            Section("Recent workouts") {
+                if model.workouts.isEmpty {
+                    Text("None logged yet.").foregroundStyle(.secondary)
+                } else {
+                    ForEach(model.workouts, id: \.id) { w in
+                        HStack {
+                            Image(systemName: ActivityCatalog.forWorkoutType(w.type).symbol)
+                                .foregroundStyle(.secondary)
+                            Text(typeLabel(w.type))
+                            Spacer()
+                            Text("\(w.durationMinutes) min").foregroundStyle(.secondary)
                         }
                     }
                 }
-                if health.isAvailable {
-                    Section("Apple Health") {
-                        Toggle("Sync workouts", isOn: $health.syncEnabled)
-                        Button("Import recent from Health") {
-                            Task { await model.importFromHealth(health) }
-                        }
+            }
+            if health.isAvailable {
+                Section("Apple Health") {
+                    Toggle("Sync workouts", isOn: $health.syncEnabled)
+                    Button("Import recent from Health") {
+                        Task { await model.importFromHealth(health) }
                     }
                 }
-                Section {
-                    Button("Log activity") { showLogSheet = true }
-                }
             }
-            .navigationTitle("Training")
-            .igListBackground()
-            .sheet(isPresented: $showLogSheet) {
-                LogWorkoutSheet { activity, minutes, intensity in
-                    Task { await model.log(activity: activity, minutes: minutes, intensity: intensity, health: health) }
-                }
+            Section {
+                Button("Log activity") { showLogSheet = true }
             }
-            .onAppear {
-                model.start(sdk: app.sdk)
-                if health.syncEnabled { Task { await health.requestAuthorization() } }
-            }
-            .onDisappear { model.stop() }
         }
+        .igListBackground()
+        .sheet(isPresented: $showLogSheet) {
+            LogWorkoutSheet { activity, minutes, intensity in
+                Task { await model.log(activity: activity, minutes: minutes, intensity: intensity, health: health) }
+            }
+        }
+        .onAppear {
+            model.start(sdk: app.sdk)
+            if health.syncEnabled { Task { await health.requestAuthorization() } }
+        }
+        .onDisappear { model.stop() }
     }
 
     private func intensityLabel(_ i: WorkoutIntensity) -> String {

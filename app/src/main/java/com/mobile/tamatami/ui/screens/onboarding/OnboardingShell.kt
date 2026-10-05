@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,7 +48,10 @@ fun OnboardingShell(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                // systemBarsPadding keeps content clear of BOTH the status bar
+                // (top) and the navigation bar (bottom); the gradient background
+                // on the outer Box still bleeds edge-to-edge behind them.
+                .systemBarsPadding()
                 .padding(24.dp),
         ) {
             if (onBack != null) {
