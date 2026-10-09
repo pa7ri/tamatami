@@ -75,8 +75,13 @@ fun TamagotchiAvatar(
             )
 
             // One play finished → rest for ~1 min, then kick off the next.
-            LaunchedEffect(animationState.isAtEnd) {
-                if (animationState.isAtEnd) {
+            // Gate on progress reaching the end *after* the composition has
+            // loaded: isAtEnd/progress read as "ended" at progress 0f before the
+            // first frame plays, which would otherwise pause us forever on frame
+            // one and the animation would never run.
+            val finished = composition != null && animationState.progress == 1f
+            LaunchedEffect(finished) {
+                if (finished) {
                     isPlaying = false
                     delay(IDLE_BETWEEN_PLAYS_MS)
                     isPlaying = true

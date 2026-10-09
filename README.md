@@ -82,8 +82,7 @@ Each cycle phase has its own color in the app — they tint the calendar, the ho
   and a today ring. Tap any day to log flow and mood.
 - 🩺 **Health** — *Hormones* (estrogen / progesterone / LH rhythms across the cycle) and
   *Medication* tracking.
-- ⚙️ **Settings** — reached via the gear in the top bar of every screen; profile, cycle length,
-  daily goals, and reminders.
+- ⚙️ **Settings** — profile, cycle length, daily goals, and reminders.
 - 👋 **Onboarding** — name your Tama, log your last period, set cycle length. You're tracking
   inside two minutes.
 
@@ -156,7 +155,7 @@ app/src/main/java/com/mobile/tamatami/   # Android
     └── theme/        # Phase + mood color tokens, gradients
 
 iosApp/Tamatami/                          # iOS (SwiftUI)
-├── RootView.swift     # onboarding gate + TabView (Home · Cycle & Training · Calendar · Health)
+├── RootView.swift     # onboarding gate + TabView (Home · Cycle & Training · Calendar · Health · Settings)
 ├── *Screen.swift      # one view per tab/screen, calling into the shared framework
 └── TamagotchiAvatar.swift  # Lottie mascot driven by the shared mood engine
 ```

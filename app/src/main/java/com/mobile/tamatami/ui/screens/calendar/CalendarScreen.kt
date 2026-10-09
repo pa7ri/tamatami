@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
-import com.mobile.tamatami.ui.components.SettingsAction
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.calendar.sections.CalendarContent
@@ -28,7 +27,6 @@ fun CalendarScreen(navController: NavHostController, container: AppContainer) {
     TamatamiScaffold(
         title = "Calendar",
         bottomBar = { TamatamiBottomBar(navController) },
-        actions = { SettingsAction(navController) },
     ) { padding ->
         Column(
             modifier = Modifier

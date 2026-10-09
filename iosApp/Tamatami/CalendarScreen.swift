@@ -32,9 +32,6 @@ struct CalendarScreen: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showLegend = true } label: { Image(systemName: "info.circle") }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink { SettingsScreen() } label: { Image(systemName: "gearshape") }
-                }
             }
             .sheet(isPresented: $showLegend) { LegendSheet() }
             .sheet(isPresented: $showLogSheet) {

@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
-import com.mobile.tamatami.ui.components.SettingsAction
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.hormones.HormonesContent
@@ -33,7 +32,6 @@ fun HealthScreen(navController: NavHostController, container: AppContainer) {
     TamatamiScaffold(
         title = "Health",
         bottomBar = { TamatamiBottomBar(navController) },
-        actions = { SettingsAction(navController) },
     ) { padding ->
         Column(
             modifier = Modifier

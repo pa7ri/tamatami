@@ -35,7 +35,6 @@ import androidx.navigation.NavHostController
 import com.mobile.tamatami.di.AppContainer
 import com.mobile.tamatami.domain.cycle.guideFor
 import com.mobile.tamatami.domain.model.CyclePhase
-import com.mobile.tamatami.ui.components.SettingsAction
 import com.mobile.tamatami.ui.components.TamatamiBottomBar
 import com.mobile.tamatami.ui.components.TamatamiScaffold
 import com.mobile.tamatami.ui.screens.home.displayName
@@ -58,7 +57,6 @@ fun CycleInfoScreen(navController: NavHostController, container: AppContainer) {
     TamatamiScaffold(
         title = "Cycle & Training",
         bottomBar = { TamatamiBottomBar(navController) },
-        actions = { SettingsAction(navController) },
     ) { padding ->
         Column(
             modifier = Modifier

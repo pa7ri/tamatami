@@ -4,13 +4,13 @@ This is the iOS half of the Kotlin Multiplatform migration. The shared business
 logic + data layer live in `:shared` and compile for iOS; the SwiftUI app in
 `iosApp/` consumes them through the `Shared` framework.
 
-> **Current navigation (4-tab shell, see `RootView.swift`):**
+> **Current navigation (5-tab shell, see `RootView.swift`):**
 > **Home** (Tama avatar + today trackers) · **Cycle & Training** (a segmented
 > Cycle-guide/Nutrition + Training view, `GuideScreen`) · **Calendar** (month
-> grid + day detail, `CalendarScreen`) · **Health** (Hormones + Medication).
-> Settings is reached via the gear in the top bar (not a tab). Some setup notes
-> below predate this layout and describe an earlier build order — follow the
-> code, not the historical tab names, where they differ.
+> grid + day detail, `CalendarScreen`) · **Health** (Hormones + Medication) ·
+> **Settings**. Some setup notes below predate this layout and describe an
+> earlier build order — follow the code, not the historical tab names, where
+> they differ.
 
 **What can and can't be done without a Mac + Xcode**
 

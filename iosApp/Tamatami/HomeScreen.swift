@@ -21,11 +21,6 @@ struct HomeScreen: View {
             }
             .background(IG.bg.ignoresSafeArea(edges: [.bottom, .horizontal]))
             .navigationTitle("Tamatami")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink { SettingsScreen() } label: { Image(systemName: "gearshape") }
-                }
-            }
             .sheet(isPresented: $showLogSheet) {
                 LogWorkoutSheet { activity, minutes, intensity in
                     Task { await model.logActivity(activity, minutes: minutes, intensity: intensity) }

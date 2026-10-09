@@ -35,6 +35,8 @@ private struct MainTabs: View {
                 .tabItem { Label("Calendar", systemImage: "calendar") }
             HealthScreen()
                 .tabItem { Label("Health", systemImage: "stethoscope") }
+            NavigationStack { SettingsScreen() }
+                .tabItem { Label("Settings", systemImage: "gearshape") }
         }
     }
 }

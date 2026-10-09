@@ -5,6 +5,7 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MonitorHeart
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 
@@ -34,16 +35,16 @@ data class BottomNavItem(
 )
 
 /**
- * Bottom nav, in display order — Material 3 caps this at 5 items; we use 4.
+ * Bottom nav, in display order — Material 3 caps this at 5 items.
  *
  * The Cycle tab ("Cycle & Training") hosts a Cycle-info / Nutrition / Training
  * sub-tab switch; the Health tab hosts a Hormones / Medication sub-tab switch.
- * Calendar is its own tab. Settings is reached via a gear action in the top bar
- * (see SettingsAction), not a bottom-nav tab.
+ * Calendar is its own tab. Settings is a first-class tab.
  */
 val BottomNavItems: List<BottomNavItem> = listOf(
     BottomNavItem(TamatamiRoute.Home, "Home", Icons.Outlined.Home),
     BottomNavItem(TamatamiRoute.CycleInfo, "Cycle", Icons.Outlined.Favorite),
     BottomNavItem(TamatamiRoute.Calendar, "Calendar", Icons.Outlined.DateRange),
     BottomNavItem(TamatamiRoute.Health, "Health", Icons.Outlined.MonitorHeart),
+    BottomNavItem(TamatamiRoute.Settings, "Settings", Icons.Outlined.Settings),
 )
